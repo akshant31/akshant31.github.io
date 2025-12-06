@@ -748,22 +748,28 @@ ol {
     }
 }
 
-/* ===== SECTIONS WRAPPER ===== */
+/* ===== SECTIONS WRAPPER - HORIZONTAL SCROLL ===== */
 .sections-wrapper {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    width: fit-content;
     min-height: 100vh;
+    transition: transform 0.1s ease-out;
 }
 
 /* ===== SECTION BASE ===== */
 .section {
     min-height: 100vh;
-    width: 100%;
+    width: 100vw;
+    min-width: 100vw;
     padding: 100px 80px;
+    padding-right: 120px;
+    /* Space for vertical nav */
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .section-header {

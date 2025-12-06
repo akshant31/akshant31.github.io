@@ -143,9 +143,16 @@ function initTypingEffect() {
     }, CONFIG.typingDelay);
 }
 
-// ===== SCROLL EFFECTS =====
+// ===== SCROLL EFFECTS - HORIZONTAL SCROLL =====
 function initScrollEffects() {
     let ticking = false;
+
+    // Calculate document height based on number of sections
+    const sectionCount = elements.sections.length;
+    const totalWidth = sectionCount * window.innerWidth;
+
+    // Set body height to enable vertical scrolling that we'll translate to horizontal
+    document.body.style.height = `${totalWidth}px`;
 
     window.addEventListener('scroll', () => {
         if (!ticking) {
@@ -156,55 +163,69 @@ function initScrollEffects() {
             ticking = true;
         }
     });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        const newTotalWidth = elements.sections.length * window.innerWidth;
+        document.body.style.height = `${newTotalWidth}px`;
+    });
 }
 
 function handleScroll() {
     const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const scrollPercent = (scrollTop / docHeight) * 100;
+    const sectionCount = elements.sections.length;
+    const totalWidth = (sectionCount - 1) * window.innerWidth;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+    // Calculate horizontal translation based on scroll position
+    const scrollPercent = scrollTop / maxScroll;
+    const translateX = -scrollPercent * totalWidth;
+
+    // Apply horizontal translation to sections wrapper
+    if (elements.sectionsWrapper) {
+        elements.sectionsWrapper.style.transform = `translateX(${translateX}px)`;
+    }
 
     // Update progress bar
-    elements.progressBar.style.width = `${scrollPercent}%`;
+    elements.progressBar.style.width = `${scrollPercent * 100}%`;
 
-    // Parallax effect for background layers
-    updateParallax(scrollTop);
+    // Parallax effect for background layers (now horizontal)
+    updateParallax(scrollTop, scrollPercent);
 
     // Update active navigation
-    updateActiveNav(scrollTop);
+    updateActiveNav(scrollPercent, sectionCount);
 
     // Update timeline progress
     updateTimelineProgress(scrollTop);
 }
 
-function updateParallax(scrollTop) {
+function updateParallax(scrollTop, scrollPercent) {
     const parallaxSpeed = {
-        stars: 0.3,
-        nebula: 0.5,
+        stars: 0.5,
+        nebula: 0.3,
         planets: 0.7
     };
 
+    // Horizontal parallax movement
+    const baseTranslate = scrollPercent * window.innerWidth * 2;
+
     if (elements.layerStars) {
-        elements.layerStars.style.transform = `translateY(${scrollTop * parallaxSpeed.stars}px)`;
+        elements.layerStars.style.transform = `translateX(${-baseTranslate * parallaxSpeed.stars}px)`;
     }
     if (elements.layerNebula) {
-        elements.layerNebula.style.transform = `translateY(${scrollTop * parallaxSpeed.nebula}px)`;
+        elements.layerNebula.style.transform = `translateX(${-baseTranslate * parallaxSpeed.nebula}px)`;
     }
     if (elements.layerPlanets) {
-        elements.layerPlanets.style.transform = `translateY(${scrollTop * parallaxSpeed.planets}px)`;
+        elements.layerPlanets.style.transform = `translateX(${-baseTranslate * parallaxSpeed.planets}px)`;
     }
 }
 
-function updateActiveNav(scrollTop) {
-    let currentSection = 0;
-
-    elements.sections.forEach((section, index) => {
-        const sectionTop = section.offsetTop - 200;
-        const sectionBottom = sectionTop + section.offsetHeight;
-
-        if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
-            currentSection = index;
-        }
-    });
+function updateActiveNav(scrollPercent, sectionCount) {
+    // Determine current section based on scroll percentage
+    const currentSection = Math.min(
+        Math.floor(scrollPercent * sectionCount),
+        sectionCount - 1
+    );
 
     elements.navLinks.forEach((link, index) => {
         link.classList.toggle('active', index === currentSection);
