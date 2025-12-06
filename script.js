@@ -61,35 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== SCROLL MODE TOGGLE =====
 function initScrollModeToggle() {
-    // Check for saved scroll mode preference or default to horizontal
-    const savedMode = localStorage.getItem('scrollMode') || 'horizontal';
-    scrollState.mode = savedMode;
-    document.documentElement.setAttribute('data-scroll', savedMode);
+    // Force vertical scroll mode (remove horizontal complexity)
+    scrollState.mode = 'vertical';
+    document.documentElement.setAttribute('data-scroll', 'vertical');
+    document.body.style.height = 'auto';
 
-    // Update body height based on mode
-    updateBodyHeight();
-
-    // Toggle scroll mode on button click
+    // Hide the scroll mode toggle button since we're using vertical only
     if (elements.scrollModeToggle) {
-        elements.scrollModeToggle.addEventListener('click', () => {
-            const newMode = scrollState.mode === 'horizontal' ? 'vertical' : 'horizontal';
-            scrollState.mode = newMode;
-
-            document.documentElement.setAttribute('data-scroll', newMode);
-            localStorage.setItem('scrollMode', newMode);
-
-            // Reset scroll position
-            window.scrollTo(0, 0);
-            scrollState.currentX = 0;
-            scrollState.targetX = 0;
-
-            if (elements.sectionsWrapper) {
-                elements.sectionsWrapper.style.transform = 'translateX(0)';
-            }
-
-            // Update body height for the new mode
-            updateBodyHeight();
-        });
+        elements.scrollModeToggle.style.display = 'none';
     }
 }
 
