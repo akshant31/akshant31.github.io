@@ -31,11 +31,22 @@ const elements = {
     statNumbers: document.querySelectorAll('.stat-number'),
     skillNodes: document.querySelectorAll('.skill-node'),
     sections: document.querySelectorAll('.section'),
-    themeToggle: document.getElementById('themeToggle')
+    themeToggle: document.getElementById('themeToggle'),
+    scrollModeToggle: document.getElementById('scrollModeToggle')
+};
+
+// ===== SCROLL STATE =====
+let scrollState = {
+    mode: 'horizontal', // 'horizontal' or 'vertical'
+    targetX: 0,
+    currentX: 0,
+    ease: 0.08, // Lower = smoother but slower
+    isScrolling: false
 };
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
+    initScrollModeToggle();
     initThemeToggle();
     initLoader();
     initParticles();
@@ -47,6 +58,50 @@ document.addEventListener('DOMContentLoaded', () => {
     initRevealAnimations();
     initSkillHovers();
 });
+
+// ===== SCROLL MODE TOGGLE =====
+function initScrollModeToggle() {
+    // Check for saved scroll mode preference or default to horizontal
+    const savedMode = localStorage.getItem('scrollMode') || 'horizontal';
+    scrollState.mode = savedMode;
+    document.documentElement.setAttribute('data-scroll', savedMode);
+
+    // Update body height based on mode
+    updateBodyHeight();
+
+    // Toggle scroll mode on button click
+    if (elements.scrollModeToggle) {
+        elements.scrollModeToggle.addEventListener('click', () => {
+            const newMode = scrollState.mode === 'horizontal' ? 'vertical' : 'horizontal';
+            scrollState.mode = newMode;
+
+            document.documentElement.setAttribute('data-scroll', newMode);
+            localStorage.setItem('scrollMode', newMode);
+
+            // Reset scroll position
+            window.scrollTo(0, 0);
+            scrollState.currentX = 0;
+            scrollState.targetX = 0;
+
+            if (elements.sectionsWrapper) {
+                elements.sectionsWrapper.style.transform = 'translateX(0)';
+            }
+
+            // Update body height for the new mode
+            updateBodyHeight();
+        });
+    }
+}
+
+function updateBodyHeight() {
+    if (scrollState.mode === 'horizontal') {
+        const sectionCount = elements.sections.length;
+        const totalWidth = sectionCount * window.innerWidth;
+        document.body.style.height = `${totalWidth}px`;
+    } else {
+        document.body.style.height = 'auto';
+    }
+}
 
 // ===== THEME TOGGLE =====
 function initThemeToggle() {
@@ -143,63 +198,76 @@ function initTypingEffect() {
     }, CONFIG.typingDelay);
 }
 
-// ===== SCROLL EFFECTS - HORIZONTAL SCROLL =====
+// ===== SCROLL EFFECTS - SMOOTH HORIZONTAL/VERTICAL SCROLL =====
 function initScrollEffects() {
-    let ticking = false;
+    // Start the smooth scroll animation loop
+    smoothScrollLoop();
 
-    // Calculate document height based on number of sections
-    const sectionCount = elements.sections.length;
-    const totalWidth = sectionCount * window.innerWidth;
-
-    // Set body height to enable vertical scrolling that we'll translate to horizontal
-    document.body.style.height = `${totalWidth}px`;
-
+    // Listen for scroll events to update target position
     window.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(() => {
-                handleScroll();
-                ticking = false;
-            });
-            ticking = true;
+        if (scrollState.mode === 'horizontal') {
+            const scrollTop = window.scrollY;
+            const sectionCount = elements.sections.length;
+            const totalWidth = (sectionCount - 1) * window.innerWidth;
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+            // Calculate target horizontal position
+            const scrollPercent = Math.min(scrollTop / maxScroll, 1);
+            scrollState.targetX = -scrollPercent * totalWidth;
+
+            // Update progress bar immediately
+            if (elements.progressBar) {
+                elements.progressBar.style.width = `${scrollPercent * 100}%`;
+            }
+
+            // Update active navigation
+            updateActiveNav(scrollPercent, sectionCount);
+        } else {
+            // Vertical mode - standard behavior
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = scrollTop / docHeight;
+
+            if (elements.progressBar) {
+                elements.progressBar.style.width = `${scrollPercent * 100}%`;
+            }
+
+            updateActiveNavVertical(scrollTop);
         }
+
+        // Update timeline progress (works in both modes)
+        updateTimelineProgress(window.scrollY);
     });
 
     // Handle resize
     window.addEventListener('resize', () => {
-        const newTotalWidth = elements.sections.length * window.innerWidth;
-        document.body.style.height = `${newTotalWidth}px`;
+        updateBodyHeight();
     });
 }
 
-function handleScroll() {
-    const scrollTop = window.scrollY;
-    const sectionCount = elements.sections.length;
-    const totalWidth = (sectionCount - 1) * window.innerWidth;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+// Smooth scroll animation loop using lerp
+function smoothScrollLoop() {
+    if (scrollState.mode === 'horizontal') {
+        // Lerp (linear interpolation) for smooth movement
+        scrollState.currentX += (scrollState.targetX - scrollState.currentX) * scrollState.ease;
 
-    // Calculate horizontal translation based on scroll position
-    const scrollPercent = scrollTop / maxScroll;
-    const translateX = -scrollPercent * totalWidth;
+        // Apply smooth horizontal translation
+        if (elements.sectionsWrapper) {
+            elements.sectionsWrapper.style.transform = `translateX(${scrollState.currentX}px)`;
+        }
 
-    // Apply horizontal translation to sections wrapper
-    if (elements.sectionsWrapper) {
-        elements.sectionsWrapper.style.transform = `translateX(${translateX}px)`;
+        // Update parallax with smooth position
+        const scrollPercent = Math.abs(scrollState.currentX) / ((elements.sections.length - 1) * window.innerWidth);
+        updateParallax(scrollPercent);
     }
 
-    // Update progress bar
-    elements.progressBar.style.width = `${scrollPercent * 100}%`;
-
-    // Parallax effect for background layers (now horizontal)
-    updateParallax(scrollTop, scrollPercent);
-
-    // Update active navigation
-    updateActiveNav(scrollPercent, sectionCount);
-
-    // Update timeline progress
-    updateTimelineProgress(scrollTop);
+    // Continue the animation loop
+    requestAnimationFrame(smoothScrollLoop);
 }
 
-function updateParallax(scrollTop, scrollPercent) {
+function updateParallax(scrollPercent) {
+    if (scrollState.mode !== 'horizontal') return;
+
     const parallaxSpeed = {
         stars: 0.5,
         nebula: 0.3,
@@ -226,6 +294,23 @@ function updateActiveNav(scrollPercent, sectionCount) {
         Math.floor(scrollPercent * sectionCount),
         sectionCount - 1
     );
+
+    elements.navLinks.forEach((link, index) => {
+        link.classList.toggle('active', index === currentSection);
+    });
+}
+
+function updateActiveNavVertical(scrollTop) {
+    let currentSection = 0;
+
+    elements.sections.forEach((section, index) => {
+        const sectionTop = section.offsetTop - 200;
+        const sectionBottom = sectionTop + section.offsetHeight;
+
+        if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
+            currentSection = index;
+        }
+    });
 
     elements.navLinks.forEach((link, index) => {
         link.classList.toggle('active', index === currentSection);

@@ -410,6 +410,67 @@ ol {
     transform: translate(-50%, -50%) rotate(90deg) scale(0.5);
 }
 
+/* Scroll Mode Toggle Button */
+.scroll-mode-toggle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid var(--color-glass-border);
+    background: var(--color-glass);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-medium);
+    margin-bottom: 10px;
+}
+
+.scroll-mode-toggle:hover {
+    border-color: var(--color-accent-purple);
+    transform: scale(1.1);
+    box-shadow: var(--glow-purple);
+}
+
+.scroll-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.3rem;
+    transition: all var(--transition-medium);
+}
+
+.scroll-icon.horizontal {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.scroll-icon.vertical {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+}
+
+[data-scroll="vertical"] .scroll-icon.horizontal {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+}
+
+[data-scroll="vertical"] .scroll-icon.vertical {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Vertical Scroll Mode - Override horizontal layout */
+[data-scroll="vertical"] .sections-wrapper {
+    flex-direction: column;
+    width: 100%;
+    transform: none !important;
+}
+
+[data-scroll="vertical"] .section {
+    width: 100%;
+    min-width: 100%;
+}
+
 .nav-sections {
     display: flex;
     flex-direction: column;
