@@ -5,7 +5,7 @@
 
 /* ===== CSS VARIABLES ===== */
 :root {
-    /* Colors */
+    /* Colors - Dark Theme (Default) */
     --color-bg-primary: #0a0a1a;
     --color-bg-secondary: #0f0f2a;
     --color-bg-tertiary: #15153a;
@@ -38,6 +38,107 @@
     --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.5);
     --glow-purple: 0 0 20px rgba(157, 78, 221, 0.5);
     --glow-pink: 0 0 20px rgba(255, 0, 110, 0.5);
+}
+
+/* ===== LIGHT THEME ===== */
+[data-theme="light"] {
+    /* Vibrant gradient background colors */
+    --color-bg-primary: #f0f4ff;
+    --color-bg-secondary: #e8f0ff;
+    --color-bg-tertiary: #dde8ff;
+
+    /* Deeper accent colors for light mode */
+    --color-accent-cyan: #0095b3;
+    --color-accent-purple: #7c3aed;
+    --color-accent-pink: #db2777;
+    --color-accent-green: #059669;
+    --color-accent-orange: #ea580c;
+
+    /* Text colors */
+    --color-text-primary: #1a1a2e;
+    --color-text-secondary: #4a4a6a;
+    --color-text-muted: #7a7a9a;
+
+    /* Glass effects */
+    --color-glass: rgba(0, 0, 0, 0.03);
+    --color-glass-border: rgba(0, 0, 0, 0.08);
+
+    /* Adjusted glows for light mode */
+    --glow-cyan: 0 0 25px rgba(0, 149, 179, 0.3);
+    --glow-purple: 0 0 25px rgba(124, 58, 237, 0.3);
+    --glow-pink: 0 0 25px rgba(219, 39, 119, 0.3);
+}
+
+/* Light theme specific overrides */
+[data-theme="light"] body {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 25%, #fce7f3 50%, #dbeafe 75%, #f0f4ff 100%);
+    background-attachment: fixed;
+}
+
+[data-theme="light"] .nav-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .loader {
+    background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+}
+
+[data-theme="light"] .experience-card,
+[data-theme="light"] .skill-category,
+[data-theme="light"] .contact-panel {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .terminal-window {
+    background: #1e1e2e;
+}
+
+[data-theme="light"] .floating-text {
+    -webkit-text-stroke: 1px rgba(124, 58, 237, 0.1);
+    text-stroke: 1px rgba(124, 58, 237, 0.1);
+}
+
+[data-theme="light"] .parallax-layer.layer-stars {
+    opacity: 0.3;
+}
+
+[data-theme="light"] .parallax-layer.layer-nebula {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 149, 179, 0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at 60% 80%, rgba(219, 39, 119, 0.06) 0%, transparent 45%);
+}
+
+[data-theme="light"] .astronaut-helmet {
+    background: linear-gradient(180deg, #f8fafc, #e2e8f0);
+}
+
+[data-theme="light"] .suit-chest {
+    background: linear-gradient(180deg, #f8fafc, #cbd5e1);
+}
+
+[data-theme="light"] .progress-container {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .section-about {
+    background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.03));
+}
+
+[data-theme="light"] .section-skills {
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.03), rgba(0, 149, 179, 0.03));
+}
+
+[data-theme="light"] .section-experience {
+    background: linear-gradient(180deg, rgba(0, 149, 179, 0.03), rgba(219, 39, 119, 0.03));
+}
+
+[data-theme="light"] .section-contact {
+    background: linear-gradient(180deg, rgba(219, 39, 119, 0.03), transparent);
 }
 
 /* ===== RESET & BASE ===== */
@@ -258,6 +359,55 @@ ol {
     50% {
         filter: drop-shadow(0 0 20px rgba(157, 78, 221, 0.8));
     }
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid var(--color-glass-border);
+    background: var(--color-glass);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-medium);
+    margin-bottom: 10px;
+}
+
+.theme-toggle:hover {
+    border-color: var(--color-accent-cyan);
+    transform: scale(1.1);
+    box-shadow: var(--glow-cyan);
+}
+
+.theme-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.3rem;
+    transition: all var(--transition-medium);
+}
+
+.theme-icon.sun {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-90deg) scale(0.5);
+}
+
+.theme-icon.moon {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-icon.sun {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-icon.moon {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg) scale(0.5);
 }
 
 .nav-sections {

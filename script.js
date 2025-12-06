@@ -30,11 +30,13 @@ const elements = {
     timelineItems: document.querySelectorAll('.timeline-item'),
     statNumbers: document.querySelectorAll('.stat-number'),
     skillNodes: document.querySelectorAll('.skill-node'),
-    sections: document.querySelectorAll('.section')
+    sections: document.querySelectorAll('.section'),
+    themeToggle: document.getElementById('themeToggle')
 };
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
+    initThemeToggle();
     initLoader();
     initParticles();
     initTypingEffect();
@@ -45,6 +47,40 @@ document.addEventListener('DOMContentLoaded', () => {
     initRevealAnimations();
     initSkillHovers();
 });
+
+// ===== THEME TOGGLE =====
+function initThemeToggle() {
+    // Check for saved theme preference or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Toggle theme on button click
+    if (elements.themeToggle) {
+        elements.themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Update particle colors for theme
+            updateParticleColors(newTheme);
+        });
+    }
+}
+
+function updateParticleColors(theme) {
+    const particles = document.querySelectorAll('.particle');
+    const darkColors = ['#00d4ff', '#9d4edd', '#ff006e', '#00ff88'];
+    const lightColors = ['#0095b3', '#7c3aed', '#db2777', '#059669'];
+    const colors = theme === 'light' ? lightColors : darkColors;
+
+    particles.forEach(particle => {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.background = color;
+        particle.style.boxShadow = `0 0 ${parseInt(particle.style.width) * 2}px ${color}`;
+    });
+}
 
 // ===== LOADER =====
 function initLoader() {
