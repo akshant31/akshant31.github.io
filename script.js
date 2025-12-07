@@ -1,554 +1,402 @@
-/* =====================================
-   DATA ENGINEER PORTFOLIO - JAVASCRIPT
-   Interactive Story-like Portfolio
-   ===================================== */
+/**
+ * Interactive Horizontal Portfolio - Data Journey
+ * Horizontal scroll with animated character and parallax effects
+ */
 
 // ===== CONFIGURATION =====
 const CONFIG = {
-    typingSpeed: 100,
+    scrollSensitivity: 1.5,
+    lerpFactor: 0.08,
+    sectionCount: 5,
+    typingSpeed: 80,
     typingDelay: 1000,
-    particleCount: 30,
-    scrollThreshold: 0.1,
-    animationDuration: 800,
-    name: "Akshant Kumar" // Your name for typing animation
+    titles: ['Data Engineer', 'Pipeline Architect', 'Cloud Specialist', 'Problem Solver']
+};
+
+// ===== STATE =====
+const state = {
+    currentScroll: 0,
+    targetScroll: 0,
+    maxScroll: 0,
+    isScrolling: false,
+    scrollTimeout: null,
+    currentSection: 0,
+    characterWalking: false
 };
 
 // ===== DOM ELEMENTS =====
-const elements = {
-    loader: document.getElementById('loader'),
-    progressBar: document.getElementById('progressBar'),
-    scrollContainer: document.getElementById('scrollContainer'),
-    sectionsWrapper: document.getElementById('sectionsWrapper'),
-    nav: document.getElementById('nav'),
-    navLinks: document.querySelectorAll('.nav-link'),
-    particles: document.getElementById('particles'),
-    typedName: document.getElementById('typedName'),
-    layerStars: document.getElementById('layerStars'),
-    layerNebula: document.getElementById('layerNebula'),
-    layerPlanets: document.getElementById('layerPlanets'),
-    timelineProgress: document.getElementById('timelineProgress'),
-    timelineItems: document.querySelectorAll('.timeline-item'),
-    statNumbers: document.querySelectorAll('.stat-number'),
-    skillNodes: document.querySelectorAll('.skill-node'),
-    sections: document.querySelectorAll('.section'),
-    themeToggle: document.getElementById('themeToggle'),
-    scrollModeToggle: document.getElementById('scrollModeToggle')
-};
-
-// ===== SCROLL STATE =====
-let scrollState = {
-    mode: 'horizontal', // 'horizontal' or 'vertical'
-    targetX: 0,
-    currentX: 0,
-    ease: 0.08, // Lower = smoother but slower
-    isScrolling: false
-};
+let elements = {};
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
-    initScrollModeToggle();
-    initThemeToggle();
+    initElements();
     initLoader();
-    initParticles();
+    initHorizontalScroll();
+    initParallax();
+    initCharacter();
     initTypingEffect();
-    initScrollEffects();
     initNavigation();
-    initTimelineAnimations();
-    initStatCounters();
-    initRevealAnimations();
-    initSkillHovers();
+    initSectionAnimations();
+    initStats();
 });
 
-// ===== SCROLL MODE TOGGLE =====
-function initScrollModeToggle() {
-    // Force vertical scroll mode (remove horizontal complexity)
-    scrollState.mode = 'vertical';
-    document.documentElement.setAttribute('data-scroll', 'vertical');
-    document.body.style.height = 'auto';
+function initElements() {
+    elements = {
+        loader: document.getElementById('loader'),
+        journeyContainer: document.getElementById('journeyContainer'),
+        sectionsTrack: document.getElementById('sectionsTrack'),
+        progressFill: document.getElementById('progressFill'),
+        progressDots: document.querySelectorAll('.progress-dot'),
+        scrollHint: document.getElementById('scrollHint'),
+        character: document.getElementById('character'),
+        typedText: document.getElementById('typedText'),
+        navPills: document.querySelectorAll('.nav-pill'),
+        layerSky: document.getElementById('layerSky'),
+        layerCity: document.getElementById('layerCity'),
+        layerMid: document.getElementById('layerMid'),
+        layerGround: document.getElementById('layerGround'),
+        sections: document.querySelectorAll('.journey-section'),
+        timelineItems: document.querySelectorAll('.timeline-item'),
+        statValues: document.querySelectorAll('.stat-value')
+    };
 
-    // Hide the scroll mode toggle button since we're using vertical only
-    if (elements.scrollModeToggle) {
-        elements.scrollModeToggle.style.display = 'none';
-    }
-}
-
-function updateBodyHeight() {
-    if (scrollState.mode === 'horizontal') {
-        const sectionCount = elements.sections.length;
-        const totalWidth = sectionCount * window.innerWidth;
-        document.body.style.height = `${totalWidth}px`;
-    } else {
-        document.body.style.height = 'auto';
-    }
-}
-
-// ===== THEME TOGGLE =====
-function initThemeToggle() {
-    // Check for saved theme preference or default to dark
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
-    // Toggle theme on button click
-    if (elements.themeToggle) {
-        elements.themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-
-            // Update particle colors for theme
-            updateParticleColors(newTheme);
-        });
-    }
-}
-
-function updateParticleColors(theme) {
-    const particles = document.querySelectorAll('.particle');
-    const darkColors = ['#00d4ff', '#9d4edd', '#ff006e', '#00ff88'];
-    const lightColors = ['#0095b3', '#7c3aed', '#db2777', '#059669'];
-    const colors = theme === 'light' ? lightColors : darkColors;
-
-    particles.forEach(particle => {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        particle.style.background = color;
-        particle.style.boxShadow = `0 0 ${parseInt(particle.style.width) * 2}px ${color}`;
-    });
+    // Calculate max scroll based on section count
+    state.maxScroll = (CONFIG.sectionCount - 1) * window.innerWidth;
 }
 
 // ===== LOADER =====
 function initLoader() {
-    // Hide loader after content loads
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            elements.loader.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }, 1500); // Show loader for at least 1.5s for effect
-    });
+    setTimeout(() => {
+        elements.loader.classList.add('hidden');
+    }, 2500);
 }
 
-// ===== PARTICLES =====
-function initParticles() {
-    const colors = ['#00d4ff', '#9d4edd', '#ff006e', '#00ff88'];
+// ===== HORIZONTAL SCROLL =====
+function initHorizontalScroll() {
+    // Wheel event for horizontal scrolling
+    window.addEventListener('wheel', handleWheel, { passive: false });
 
-    for (let i = 0; i < CONFIG.particleCount; i++) {
-        createParticle(colors);
+    // Touch events for mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const deltaX = touchStartX - touchX;
+        const deltaY = touchStartY - touchY;
+
+        // Use horizontal swipe if it's more horizontal than vertical
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            state.targetScroll += deltaX * 2;
+            state.targetScroll = clamp(state.targetScroll, 0, state.maxScroll);
+            touchStartX = touchX;
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', handleKeyboard);
+
+    // Resize handler
+    window.addEventListener('resize', handleResize);
+
+    // Start animation loop
+    requestAnimationFrame(animationLoop);
+}
+
+function handleWheel(e) {
+    e.preventDefault();
+
+    // Convert vertical scroll to horizontal
+    const delta = e.deltaY * CONFIG.scrollSensitivity;
+    state.targetScroll += delta;
+    state.targetScroll = clamp(state.targetScroll, 0, state.maxScroll);
+
+    // Hide scroll hint after first scroll
+    if (elements.scrollHint && !elements.scrollHint.classList.contains('hidden')) {
+        elements.scrollHint.classList.add('hidden');
+    }
+
+    // Set scrolling state
+    setScrollingState(true);
+}
+
+function handleKeyboard(e) {
+    const scrollAmount = window.innerWidth * 0.3;
+
+    switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+            state.targetScroll += scrollAmount;
+            break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+            state.targetScroll -= scrollAmount;
+            break;
+        case 'Home':
+            state.targetScroll = 0;
+            break;
+        case 'End':
+            state.targetScroll = state.maxScroll;
+            break;
+        default:
+            return;
+    }
+
+    state.targetScroll = clamp(state.targetScroll, 0, state.maxScroll);
+    setScrollingState(true);
+}
+
+function handleResize() {
+    state.maxScroll = (CONFIG.sectionCount - 1) * window.innerWidth;
+    state.targetScroll = clamp(state.targetScroll, 0, state.maxScroll);
+}
+
+function setScrollingState(isScrolling) {
+    state.isScrolling = isScrolling;
+
+    clearTimeout(state.scrollTimeout);
+    state.scrollTimeout = setTimeout(() => {
+        state.isScrolling = false;
+    }, 150);
+}
+
+// ===== ANIMATION LOOP =====
+function animationLoop() {
+    // Lerp current scroll towards target
+    state.currentScroll += (state.targetScroll - state.currentScroll) * CONFIG.lerpFactor;
+
+    // Apply horizontal translation to sections
+    if (elements.sectionsTrack) {
+        elements.sectionsTrack.style.transform = `translateX(${-state.currentScroll}px)`;
+    }
+
+    // Update progress
+    updateProgress();
+
+    // Update parallax layers
+    updateParallax();
+
+    // Update character animation
+    updateCharacter();
+
+    // Update active section
+    updateActiveSection();
+
+    // Continue animation loop
+    requestAnimationFrame(animationLoop);
+}
+
+// ===== PROGRESS =====
+function updateProgress() {
+    const progress = (state.currentScroll / state.maxScroll) * 100;
+
+    if (elements.progressFill) {
+        elements.progressFill.style.width = `${progress}%`;
     }
 }
 
-function createParticle(colors) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
+// ===== PARALLAX =====
+function initParallax() {
+    // Initial positioning
+    updateParallax();
+}
 
-    // Random properties
-    const size = Math.random() * 4 + 2;
-    const x = Math.random() * 100;
-    const delay = Math.random() * 15;
-    const duration = Math.random() * 10 + 15;
-    const color = colors[Math.floor(Math.random() * colors.length)];
+function updateParallax() {
+    const scrollPercent = state.currentScroll / state.maxScroll;
 
-    particle.style.cssText = `
-        width: ${size}px;
-        height: ${size}px;
-        left: ${x}%;
-        background: ${color};
-        animation-delay: ${delay}s;
-        animation-duration: ${duration}s;
-        box-shadow: 0 0 ${size * 2}px ${color};
-    `;
+    // Different speeds for each layer
+    const speeds = {
+        sky: 0.1,
+        city: 0.2,
+        mid: 0.4,
+        ground: 0.6
+    };
 
-    elements.particles.appendChild(particle);
+    if (elements.layerSky) {
+        const skyOffset = -scrollPercent * window.innerWidth * 2 * speeds.sky;
+        elements.layerSky.style.transform = `translateX(${skyOffset}px)`;
+    }
+
+    if (elements.layerCity) {
+        const cityOffset = -scrollPercent * window.innerWidth * 2 * speeds.city;
+        elements.layerCity.style.transform = `translateX(${cityOffset}px)`;
+    }
+
+    if (elements.layerMid) {
+        const midOffset = -scrollPercent * window.innerWidth * 2 * speeds.mid;
+        elements.layerMid.style.transform = `translateX(${midOffset}px)`;
+    }
+
+    if (elements.layerGround) {
+        const groundOffset = -scrollPercent * window.innerWidth * 2 * speeds.ground;
+        elements.layerGround.style.transform = `translateX(${groundOffset}px)`;
+    }
+}
+
+// ===== CHARACTER =====
+function initCharacter() {
+    // Character starts idle
+    updateCharacter();
+}
+
+function updateCharacter() {
+    if (!elements.character) return;
+
+    // Check if scrolling to trigger walking animation
+    const isMoving = Math.abs(state.targetScroll - state.currentScroll) > 1;
+
+    if (isMoving && !state.characterWalking) {
+        elements.character.classList.add('walking');
+        state.characterWalking = true;
+    } else if (!isMoving && state.characterWalking) {
+        elements.character.classList.remove('walking');
+        state.characterWalking = false;
+    }
+}
+
+// ===== ACTIVE SECTION =====
+function updateActiveSection() {
+    const sectionWidth = window.innerWidth;
+    const newSection = Math.round(state.currentScroll / sectionWidth);
+
+    if (newSection !== state.currentSection) {
+        state.currentSection = newSection;
+
+        // Update progress dots
+        elements.progressDots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === newSection);
+        });
+
+        // Update nav pills
+        elements.navPills.forEach((pill, index) => {
+            pill.classList.toggle('active', index === newSection);
+        });
+
+        // Trigger section-specific animations
+        triggerSectionAnimation(newSection);
+    }
+}
+
+// ===== SECTION ANIMATIONS =====
+function initSectionAnimations() {
+    // Make first section's elements visible
+    triggerSectionAnimation(0);
+}
+
+function triggerSectionAnimation(sectionIndex) {
+    // Experience timeline items
+    if (sectionIndex === 3) {
+        elements.timelineItems.forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.add('visible');
+            }, index * 200);
+        });
+    }
+
+    // Stats counter
+    if (sectionIndex === 1) {
+        animateStats();
+    }
+}
+
+// ===== STATS COUNTER =====
+function initStats() {
+    // Stats will animate when About section is reached
+}
+
+function animateStats() {
+    elements.statValues.forEach(stat => {
+        const target = parseInt(stat.dataset.target);
+        let current = 0;
+        const increment = target / 50;
+        const duration = 1500;
+        const stepTime = duration / 50;
+
+        const counter = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(counter);
+            }
+            stat.textContent = Math.floor(current);
+        }, stepTime);
+    });
 }
 
 // ===== TYPING EFFECT =====
 function initTypingEffect() {
-    const name = CONFIG.name;
-    let index = 0;
+    if (!elements.typedText) return;
 
-    setTimeout(() => {
-        const typeInterval = setInterval(() => {
-            if (index < name.length) {
-                elements.typedName.textContent += name[index];
-                index++;
-            } else {
-                clearInterval(typeInterval);
-            }
-        }, CONFIG.typingSpeed);
-    }, CONFIG.typingDelay);
-}
+    let titleIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
 
-// ===== SCROLL EFFECTS - SMOOTH HORIZONTAL/VERTICAL SCROLL =====
-function initScrollEffects() {
-    // Start the smooth scroll animation loop
-    smoothScrollLoop();
+    function type() {
+        const currentTitle = CONFIG.titles[titleIndex];
 
-    // Listen for scroll events to update target position
-    window.addEventListener('scroll', () => {
-        if (scrollState.mode === 'horizontal') {
-            const scrollTop = window.scrollY;
-            const sectionCount = elements.sections.length;
-            const totalWidth = (sectionCount - 1) * window.innerWidth;
-            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-
-            // Calculate target horizontal position
-            const scrollPercent = Math.min(scrollTop / maxScroll, 1);
-            scrollState.targetX = -scrollPercent * totalWidth;
-
-            // Update progress bar immediately
-            if (elements.progressBar) {
-                elements.progressBar.style.width = `${scrollPercent * 100}%`;
-            }
-
-            // Update active navigation
-            updateActiveNav(scrollPercent, sectionCount);
+        if (isDeleting) {
+            charIndex--;
+            elements.typedText.textContent = currentTitle.substring(0, charIndex);
         } else {
-            // Vertical mode - standard behavior
-            const scrollTop = window.scrollY;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercent = scrollTop / docHeight;
-
-            if (elements.progressBar) {
-                elements.progressBar.style.width = `${scrollPercent * 100}%`;
-            }
-
-            updateActiveNavVertical(scrollTop);
+            charIndex++;
+            elements.typedText.textContent = currentTitle.substring(0, charIndex);
         }
 
-        // Update timeline progress (works in both modes)
-        updateTimelineProgress(window.scrollY);
-    });
+        let typeSpeed = CONFIG.typingSpeed;
 
-    // Handle resize
-    window.addEventListener('resize', () => {
-        updateBodyHeight();
-    });
-}
-
-// Smooth scroll animation loop using lerp
-function smoothScrollLoop() {
-    if (scrollState.mode === 'horizontal') {
-        // Lerp (linear interpolation) for smooth movement
-        scrollState.currentX += (scrollState.targetX - scrollState.currentX) * scrollState.ease;
-
-        // Apply smooth horizontal translation
-        if (elements.sectionsWrapper) {
-            elements.sectionsWrapper.style.transform = `translateX(${scrollState.currentX}px)`;
+        if (!isDeleting && charIndex === currentTitle.length) {
+            typeSpeed = 2000; // Pause at end
+            isDeleting = true;
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            titleIndex = (titleIndex + 1) % CONFIG.titles.length;
+            typeSpeed = 500;
         }
 
-        // Update parallax with smooth position
-        const scrollPercent = Math.abs(scrollState.currentX) / ((elements.sections.length - 1) * window.innerWidth);
-        updateParallax(scrollPercent);
+        setTimeout(type, isDeleting ? typeSpeed / 2 : typeSpeed);
     }
 
-    // Continue the animation loop
-    requestAnimationFrame(smoothScrollLoop);
-}
-
-function updateParallax(scrollPercent) {
-    if (scrollState.mode !== 'horizontal') return;
-
-    const parallaxSpeed = {
-        stars: 0.5,
-        nebula: 0.3,
-        planets: 0.7
-    };
-
-    // Horizontal parallax movement
-    const baseTranslate = scrollPercent * window.innerWidth * 2;
-
-    if (elements.layerStars) {
-        elements.layerStars.style.transform = `translateX(${-baseTranslate * parallaxSpeed.stars}px)`;
-    }
-    if (elements.layerNebula) {
-        elements.layerNebula.style.transform = `translateX(${-baseTranslate * parallaxSpeed.nebula}px)`;
-    }
-    if (elements.layerPlanets) {
-        elements.layerPlanets.style.transform = `translateX(${-baseTranslate * parallaxSpeed.planets}px)`;
-    }
-}
-
-function updateActiveNav(scrollPercent, sectionCount) {
-    // Determine current section based on scroll percentage
-    const currentSection = Math.min(
-        Math.floor(scrollPercent * sectionCount),
-        sectionCount - 1
-    );
-
-    elements.navLinks.forEach((link, index) => {
-        link.classList.toggle('active', index === currentSection);
-    });
-}
-
-function updateActiveNavVertical(scrollTop) {
-    let currentSection = 0;
-
-    elements.sections.forEach((section, index) => {
-        const sectionTop = section.offsetTop - 200;
-        const sectionBottom = sectionTop + section.offsetHeight;
-
-        if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
-            currentSection = index;
-        }
-    });
-
-    elements.navLinks.forEach((link, index) => {
-        link.classList.toggle('active', index === currentSection);
-    });
+    setTimeout(type, CONFIG.typingDelay);
 }
 
 // ===== NAVIGATION =====
 function initNavigation() {
-    elements.navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+    // Progress dots click
+    elements.progressDots.forEach((dot, index) => {
+        dot.addEventListener('click', () => navigateToSection(index));
+    });
+
+    // Nav pills click
+    elements.navPills.forEach((pill, index) => {
+        pill.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = link.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Nav background on scroll
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 100) {
-            elements.nav.style.background = 'rgba(10, 10, 26, 0.95)';
-        } else {
-            elements.nav.style.background = 'rgba(10, 10, 26, 0.8)';
-        }
-    });
-}
-
-// ===== TIMELINE ANIMATIONS =====
-function initTimelineAnimations() {
-    const timelineObserver = new IntersectionObserver(
-        (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        },
-        { threshold: 0.2 }
-    );
-
-    elements.timelineItems.forEach(item => {
-        timelineObserver.observe(item);
-    });
-}
-
-function updateTimelineProgress(scrollTop) {
-    const experienceSection = document.getElementById('experience');
-    if (!experienceSection) return;
-
-    const sectionTop = experienceSection.offsetTop;
-    const sectionHeight = experienceSection.offsetHeight;
-    const scrollPosition = scrollTop - sectionTop + window.innerHeight * 0.5;
-
-    if (scrollPosition > 0 && scrollPosition < sectionHeight) {
-        const progress = Math.min((scrollPosition / sectionHeight) * 100, 100);
-        elements.timelineProgress.style.height = `${progress}%`;
-    }
-}
-
-// ===== STAT COUNTERS =====
-function initStatCounters() {
-    const statObserver = new IntersectionObserver(
-        (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounter(entry.target);
-                    statObserver.unobserve(entry.target);
-                }
-            });
-        },
-        { threshold: 0.5 }
-    );
-
-    elements.statNumbers.forEach(stat => {
-        statObserver.observe(stat);
-    });
-}
-
-function animateCounter(element) {
-    const target = parseInt(element.getAttribute('data-count'));
-    const duration = 2000;
-    const step = target / (duration / 16);
-    let current = 0;
-
-    const counter = setInterval(() => {
-        current += step;
-        if (current >= target) {
-            element.textContent = target;
-            clearInterval(counter);
-        } else {
-            element.textContent = Math.floor(current);
-        }
-    }, 16);
-}
-
-// ===== REVEAL ANIMATIONS =====
-function initRevealAnimations() {
-    const revealElements = document.querySelectorAll('.section-header, .about-content, .skills-container, .projects-grid, .contact-content');
-
-    const revealObserver = new IntersectionObserver(
-        (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        },
-        { threshold: 0.1 }
-    );
-
-    revealElements.forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(30px)';
-        element.style.transition = 'all 0.8s ease';
-        revealObserver.observe(element);
-    });
-}
-
-// ===== SKILL HOVERS =====
-function initSkillHovers() {
-    elements.skillNodes.forEach(node => {
-        node.addEventListener('mouseenter', () => {
-            // Pause orbit animation on hover
-            node.closest('.skill-orbit').style.animationPlayState = 'paused';
-        });
-
-        node.addEventListener('mouseleave', () => {
-            // Resume orbit animation
-            node.closest('.skill-orbit').style.animationPlayState = 'running';
+            navigateToSection(index);
         });
     });
 }
 
-// ===== SMOOTH SCROLL FOR ALL ANCHOR LINKS =====
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
+function navigateToSection(index) {
+    state.targetScroll = index * window.innerWidth;
+    state.targetScroll = clamp(state.targetScroll, 0, state.maxScroll);
 
-// ===== MOUSE FOLLOWER EFFECT (Optional Enhancement) =====
-class MouseFollower {
-    constructor() {
-        this.cursor = this.createCursor();
-        this.init();
-    }
-
-    createCursor() {
-        const cursor = document.createElement('div');
-        cursor.className = 'custom-cursor';
-        cursor.innerHTML = '<div class="cursor-dot"></div><div class="cursor-ring"></div>';
-        document.body.appendChild(cursor);
-        return cursor;
-    }
-
-    init() {
-        document.addEventListener('mousemove', (e) => {
-            this.cursor.style.left = `${e.clientX}px`;
-            this.cursor.style.top = `${e.clientY}px`;
-        });
-
-        // Add hover effects to interactive elements
-        const interactiveElements = document.querySelectorAll('a, button, .skill-node, .project-card');
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => this.cursor.classList.add('hovering'));
-            el.addEventListener('mouseleave', () => this.cursor.classList.remove('hovering'));
-        });
+    // Hide scroll hint
+    if (elements.scrollHint) {
+        elements.scrollHint.classList.add('hidden');
     }
 }
 
-// Uncomment to enable custom cursor
-// new MouseFollower();
-
-// ===== EASTER EGG: KONAMI CODE =====
-const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-let konamiIndex = 0;
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === konamiCode[konamiIndex]) {
-        konamiIndex++;
-        if (konamiIndex === konamiCode.length) {
-            activateEasterEgg();
-            konamiIndex = 0;
-        }
-    } else {
-        konamiIndex = 0;
-    }
-});
-
-function activateEasterEgg() {
-    // Fun animation when Konami code is entered
-    document.body.style.animation = 'rainbow 3s ease';
-    setTimeout(() => {
-        document.body.style.animation = '';
-    }, 3000);
-
-    // Add rainbow animation to CSS dynamically
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes rainbow {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
-
-    console.log('🎮 Konami Code Activated! You found the easter egg!');
+// ===== UTILITY FUNCTIONS =====
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
 }
 
-// ===== PERFORMANCE OPTIMIZATION =====
-// Debounce function for scroll events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+function lerp(start, end, factor) {
+    return start + (end - start) * factor;
 }
-
-// Throttle function for animation frames
-function throttle(func, limit) {
-    let inThrottle;
-    return function (...args) {
-        if (!inThrottle) {
-            func.apply(this, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
-
-// ===== CONSOLE EASTER EGG =====
-console.log(`
-%c ____        _          _____            _                      
-|  _ \\  __ _| |_ __ _  | ____|_ __   __ _(_)_ __   ___  ___ _ __ 
-| | | |/ _\` | __/ _\` | |  _| | '_ \\ / _\` | | '_ \\ / _ \\/ _ \\ '__|
-| |_| | (_| | || (_| | | |___| | | | (_| | | | | |  __/  __/ |   
-|____/ \\__,_|\\__\\__,_| |_____|_| |_|\\__, |_|_| |_|\\___|\\___|_|   
-                                    |___/                        
-`, 'color: #00d4ff; font-family: monospace;');
-
-console.log('%c👋 Hey there, fellow developer! Curious about the code?', 'font-size: 14px;');
-console.log('%c📧 Feel free to reach out!', 'font-size: 14px;');
