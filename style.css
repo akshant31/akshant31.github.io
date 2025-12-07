@@ -400,8 +400,9 @@ body {
 /* ===== ANIMATED CHARACTER ===== */
 .character-container {
     position: fixed;
-    bottom: var(--ground-height);
-    left: 15%;
+    bottom: 20px;
+    /* Lower position */
+    left: 10%;
     z-index: 50;
     pointer-events: none;
 }
@@ -410,6 +411,8 @@ body {
     position: relative;
     width: var(--character-size);
     height: calc(var(--character-size) * 1.5);
+    transform: scaleX(-1);
+    /* Face right direction */
 }
 
 .character-body {
@@ -1240,29 +1243,29 @@ body {
     animation: flagWave 1.5s ease-in-out infinite;
 }
 
-/* ===== NAVIGATION PILLS ===== */
+/* ===== NAVIGATION PILLS - BOTTOM BAR ===== */
 .nav-pills {
     position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 8px;
     z-index: 100;
-    padding: 15px;
-    background: var(--glass);
+    padding: 12px 20px;
+    background: rgba(10, 10, 26, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 25px;
+    border-radius: 50px;
 }
 
 .nav-pill {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 45px;
-    height: 45px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     text-decoration: none;
     background: transparent;
@@ -1272,12 +1275,14 @@ body {
 }
 
 .pill-icon {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
 .pill-text {
     position: absolute;
-    right: 55px;
+    bottom: 55px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
     background: var(--bg-secondary);
     padding: 8px 15px;
     border-radius: 8px;
@@ -1285,15 +1290,24 @@ body {
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(10px);
     transition: var(--transition-fast);
     border: 1px solid var(--glass-border);
+}
+
+.pill-text::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--bg-secondary);
 }
 
 .nav-pill:hover .pill-text {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 .nav-pill:hover,
@@ -1314,39 +1328,123 @@ body {
     }
 
     .hero-name {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .section-title {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
     }
 
     .journey-section {
-        padding: 40px 30px;
-        padding-bottom: calc(var(--ground-height) + 60px);
+        padding: 30px 20px;
+        padding-bottom: 100px;
     }
 
     .skills-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .about-stats {
         flex-direction: column;
+        gap: 10px;
     }
 
     .nav-pills {
+        padding: 8px 15px;
+        gap: 5px;
+    }
+
+    .nav-pill {
+        width: 36px;
+        height: 36px;
+    }
+
+    .pill-icon {
+        font-size: 1rem;
+    }
+
+    .pill-text {
         display: none;
     }
 
     .character-container {
-        left: 10%;
+        left: 5%;
+        bottom: 10px;
     }
 
     .journey-progress {
-        width: 80%;
+        width: 90%;
+        top: 10px;
+    }
+
+    .progress-sections {
+        gap: 25px;
     }
 
     .progress-track {
         width: 100%;
+    }
+
+    .scroll-hint {
+        bottom: 80px;
+        font-size: 0.8rem;
+        padding: 10px 18px;
+    }
+
+    .section-hero {
+        padding-left: 20px;
+    }
+
+    .hero-title {
+        font-size: 1rem;
+    }
+
+    .timeline-content {
+        padding: 15px;
+    }
+
+    .timeline-content h3 {
+        font-size: 0.95rem;
+    }
+
+    .contact-card {
+        padding: 25px;
+    }
+
+    .skill-category {
+        padding: 15px;
+    }
+
+    .about-card {
+        padding: 20px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+    }
+
+    .ground-elements {
+        display: none;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    :root {
+        --character-size: 60px;
+    }
+
+    .hero-name {
+        font-size: 1.6rem;
+    }
+
+    .nav-pills {
+        padding: 6px 10px;
+    }
+
+    .nav-pill {
+        width: 32px;
+        height: 32px;
     }
 }
