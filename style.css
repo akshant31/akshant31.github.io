@@ -46,6 +46,24 @@
     --transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ===== LIGHT MODE ===== */
+[data-theme="light"] {
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #e2e8f0;
+    --bg-tertiary: #cbd5e1;
+
+    --text-primary: #1a202c;
+    --text-secondary: rgba(26, 32, 44, 0.8);
+    --text-muted: rgba(26, 32, 44, 0.5);
+
+    --glass: rgba(0, 0, 0, 0.05);
+    --glass-border: rgba(0, 0, 0, 0.1);
+
+    --accent-cyan: #0891b2;
+    --accent-purple: #7c3aed;
+    --accent-pink: #db2777;
+}
+
 /* ===== BASE STYLES ===== */
 html {
     overflow: hidden;
@@ -186,6 +204,54 @@ body {
 
 .progress-dot:hover {
     transform: scale(1.3);
+}
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--glass-border);
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    z-index: 100;
+    overflow: hidden;
+    transition: var(--transition-medium);
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent-cyan);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.theme-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    transition: var(--transition-medium);
+}
+
+.theme-icon.sun {
+    opacity: 1;
+}
+
+.theme-icon.moon {
+    opacity: 0;
+}
+
+[data-theme="light"] .theme-icon.sun {
+    opacity: 0;
+}
+
+[data-theme="light"] .theme-icon.moon {
+    opacity: 1;
 }
 
 /* ===== SCROLL HINT ===== */
@@ -602,6 +668,55 @@ body {
 
     50% {
         transform: rotate(15deg);
+    }
+}
+
+/* Running Animation - faster walking for end section */
+.character.running .leg.left {
+    animation: runLeft 0.2s ease-in-out infinite;
+}
+
+.character.running .leg.right {
+    animation: runRight 0.2s ease-in-out infinite;
+}
+
+.character.running {
+    animation: runningBounce 0.2s ease-in-out infinite;
+}
+
+@keyframes runLeft {
+
+    0%,
+    100% {
+        transform: rotate(25deg);
+    }
+
+    50% {
+        transform: rotate(-25deg);
+    }
+}
+
+@keyframes runRight {
+
+    0%,
+    100% {
+        transform: rotate(-25deg);
+    }
+
+    50% {
+        transform: rotate(25deg);
+    }
+}
+
+@keyframes runningBounce {
+
+    0%,
+    100% {
+        transform: scaleX(-1) translateY(0);
+    }
+
+    50% {
+        transform: scaleX(-1) translateY(-5px);
     }
 }
 
@@ -1118,6 +1233,21 @@ body {
 .timeline-content .period {
     font-size: 0.85rem;
     color: var(--text-muted);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.timeline-content .company-icon {
+    float: right;
+    font-size: 1.5rem;
+    margin-left: 10px;
+}
+
+.timeline-content .job-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-top: 8px;
 }
 
 /* Milestone Flags */

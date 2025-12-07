@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initSectionAnimations();
     initStats();
+    initThemeToggle();
 });
 
 function initElements() {
@@ -57,7 +58,8 @@ function initElements() {
         layerGround: document.getElementById('layerGround'),
         sections: document.querySelectorAll('.journey-section'),
         timelineItems: document.querySelectorAll('.timeline-item'),
-        statValues: document.querySelectorAll('.stat-value')
+        statValues: document.querySelectorAll('.stat-value'),
+        themeToggle: document.getElementById('themeToggle')
     };
 
     // Calculate max scroll based on section count
@@ -252,11 +254,22 @@ function updateCharacter() {
     // Check if scrolling to trigger walking animation
     const isMoving = Math.abs(state.targetScroll - state.currentScroll) > 1;
 
-    if (isMoving && !state.characterWalking) {
-        elements.character.classList.add('walking');
+    // Check if on final section (contact) to trigger running
+    const isOnFinalSection = state.currentSection === CONFIG.sectionCount - 1;
+
+    if (isMoving) {
+        if (isOnFinalSection) {
+            // Run to the flag on final section!
+            elements.character.classList.remove('walking');
+            elements.character.classList.add('running');
+        } else {
+            elements.character.classList.remove('running');
+            elements.character.classList.add('walking');
+        }
         state.characterWalking = true;
-    } else if (!isMoving && state.characterWalking) {
+    } else {
         elements.character.classList.remove('walking');
+        elements.character.classList.remove('running');
         state.characterWalking = false;
     }
 }
@@ -389,6 +402,23 @@ function navigateToSection(index) {
     // Hide scroll hint
     if (elements.scrollHint) {
         elements.scrollHint.classList.add('hidden');
+    }
+}
+
+// ===== THEME TOGGLE =====
+function initThemeToggle() {
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if (elements.themeToggle) {
+        elements.themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
     }
 }
 
