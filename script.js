@@ -7,7 +7,7 @@
 const CONFIG = {
     scrollSensitivity: 1.5,
     lerpFactor: 0.08,
-    sectionCount: 5,
+    sectionCount: 6,
     typingSpeed: 80,
     typingDelay: 1000,
     titles: ['Data Engineer', 'Pipeline Architect', 'Cloud Specialist', 'Problem Solver']
