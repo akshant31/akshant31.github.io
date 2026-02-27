@@ -4,353 +4,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Akshant Kumar - Data Engineer | Interactive Portfolio">
+    <meta name="description" content="Akshant Kumar - Lead Data Engineer | 3D Interactive Portfolio">
     <title>Akshant Kumar | Data Engineer</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <!-- Three.js WebGL Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+
     <!-- Loading Screen -->
-    <div class="loader" id="loader">
-        <div class="loader-content">
-            <div class="loader-character"></div>
-            <div class="loader-text">Loading Journey...</div>
-            <div class="loader-bar">
-                <div class="loader-progress"></div>
+    <div id="loader">
+        <div class="loader-inner">
+            <div class="loader-rings">
+                <div class="l-ring l-ring-1"></div>
+                <div class="l-ring l-ring-2"></div>
+                <div class="l-ring l-ring-3"></div>
+            </div>
+            <div class="loader-info">
+                <span class="loader-label">INITIALIZING</span>
+                <div class="loader-track">
+                    <div class="loader-fill" id="loaderFill"></div>
+                </div>
+                <span class="loader-pct" id="loaderPct">0%</span>
             </div>
         </div>
     </div>
 
-    <!-- Progress Indicator -->
-    <div class="journey-progress">
-        <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-brand">
+            <span class="brand-bracket">[</span>AK<span class="brand-bracket">]</span>
         </div>
-        <div class="progress-sections">
-            <span class="progress-dot active" data-section="0"></span>
-            <span class="progress-dot" data-section="1"></span>
-            <span class="progress-dot" data-section="2"></span>
-            <span class="progress-dot" data-section="3"></span>
-            <span class="progress-dot" data-section="4"></span>
+        <div class="nav-links">
+            <a href="#hero"       class="nav-link active" data-section="hero">Home</a>
+            <a href="#about"      class="nav-link" data-section="about">About</a>
+            <a href="#skills"     class="nav-link" data-section="skills">Skills</a>
+            <a href="#experience" class="nav-link" data-section="experience">Experience</a>
+            <a href="#contact"    class="nav-link" data-section="contact">Contact</a>
         </div>
-    </div>
-
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode">
-        <span class="theme-icon sun">☀️</span>
-        <span class="theme-icon moon">🌙</span>
-    </button>
-
-    <!-- Instructions -->
-    <div class="scroll-hint" id="scrollHint">
-        <span class="hint-icon">🖱️</span>
-        <span class="hint-text">Scroll to explore my journey →</span>
-    </div>
-
-    <!-- Main Container -->
-    <div class="journey-container" id="journeyContainer">
-
-        <!-- Parallax Background Layers -->
-        <div class="parallax-bg">
-            <div class="bg-layer layer-sky" id="layerSky"></div>
-            <div class="bg-layer layer-city" id="layerCity"></div>
-            <div class="bg-layer layer-mid" id="layerMid"></div>
-            <div class="bg-layer layer-ground" id="layerGround"></div>
+        <div class="nav-right">
+            <button class="theme-btn" id="themeBtn" title="Toggle theme">
+                <span class="t-sun">☀️</span>
+                <span class="t-moon">🌙</span>
+            </button>
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
-
-        <!-- Animated Character -->
-        <div class="character-container">
-            <div class="character" id="character">
-                <div class="character-body">
-                    <div class="character-head">
-                        <div class="character-hair"></div>
-                        <div class="character-face">
-                            <div class="character-eyes">
-                                <span class="eye left"></span>
-                                <span class="eye right"></span>
-                            </div>
-                            <div class="character-glasses"></div>
-                        </div>
-                    </div>
-                    <div class="character-torso">
-                        <div class="character-shirt"></div>
-                        <div class="character-laptop"></div>
-                    </div>
-                    <div class="character-legs">
-                        <div class="leg left"></div>
-                        <div class="leg right"></div>
-                    </div>
-                </div>
-                <div class="character-shadow"></div>
-            </div>
-        </div>
-
-        <!-- Sections Wrapper -->
-        <div class="sections-track" id="sectionsTrack">
-
-            <!-- Section 1: Hero -->
-            <section class="journey-section section-hero" id="hero">
-                <div class="section-content">
-                    <div class="hero-text">
-                        <div class="hero-greeting">Hello, I'm</div>
-                        <h1 class="hero-name">Akshant Kumar</h1>
-                        <div class="hero-title">
-                            <span class="title-prefix">{'</span>
-                            <span class="typed-text" id="typedText"></span>
-                            <span class="cursor">|</span>
-                            <span class="title-suffix">'}</span>
-                        </div>
-                        <div class="hero-tagline">Transforming Data into Intelligence</div>
-                    </div>
-                    <div class="hero-decoration">
-                        <div class="floating-icon icon-1">📊</div>
-                        <div class="floating-icon icon-2">🔮</div>
-                        <div class="floating-icon icon-3">⚡</div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="platform platform-1"></div>
-                    <div class="data-node node-1"></div>
-                </div>
-            </section>
-
-            <!-- Section 2: About -->
-            <section class="journey-section section-about" id="about">
-                <div class="section-content">
-                    <h2 class="section-title">About Me</h2>
-                    <div class="about-grid">
-                        <div class="about-card bio-card">
-                            <div class="card-icon">👨‍💻</div>
-                            <p>I craft the invisible infrastructure that powers data-driven decisions. From building
-                                real-time learning platforms at Infosys to healthcare data operations at Ametris, I've
-                                architected systems that process millions of records daily.</p>
-                            <p style="margin-top: 10px;">My toolkit includes Spark & Kafka for streaming, Airflow for
-                                orchestration, and AWS & Azure for cloud infrastructure.</p>
-                        </div>
-                        <div class="about-stats">
-                            <div class="stat-item">
-                                <span class="stat-value" data-target="7">0</span>
-                                <span class="stat-label">Years Experience</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" data-target="4">0</span>
-                                <span class="stat-label">Companies</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" data-target="12">0</span>
-                                <span class="stat-label">Technologies</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="terminal-display">
-                        <div class="terminal-header">
-                            <span class="terminal-dot red"></span>
-                            <span class="terminal-dot yellow"></span>
-                            <span class="terminal-dot green"></span>
-                        </div>
-                        <div class="terminal-content">
-                            <span class="terminal-line">$ whoami</span>
-                            <span class="terminal-output">data_engineer</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 3: Skills -->
-            <section class="journey-section section-skills" id="skills">
-                <div class="section-content">
-                    <h2 class="section-title">Skills & Tools</h2>
-                    <div class="skills-grid">
-                        <div class="skill-category">
-                            <h3>Languages</h3>
-                            <div class="skill-items">
-                                <span class="skill-tag">Python</span>
-                                <span class="skill-tag">SQL</span>
-                                <span class="skill-tag">Java</span>
-                                <span class="skill-tag">Scala</span>
-                            </div>
-                        </div>
-                        <div class="skill-category">
-                            <h3>Big Data</h3>
-                            <div class="skill-items">
-                                <span class="skill-tag">Apache Spark</span>
-                                <span class="skill-tag">Kafka</span>
-                                <span class="skill-tag">Airflow</span>
-                                <span class="skill-tag">Hadoop</span>
-                            </div>
-                        </div>
-                        <div class="skill-category">
-                            <h3>Databases</h3>
-                            <div class="skill-items">
-                                <span class="skill-tag">PostgreSQL</span>
-                                <span class="skill-tag">MongoDB</span>
-                                <span class="skill-tag">Redshift</span>
-                                <span class="skill-tag">Elasticsearch</span>
-                            </div>
-                        </div>
-                        <div class="skill-category">
-                            <h3>Cloud</h3>
-                            <div class="skill-items">
-                                <span class="skill-tag">AWS</span>
-                                <span class="skill-tag">Azure</span>
-                                <span class="skill-tag">GCP</span>
-                                <span class="skill-tag">Docker</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="server-rack">
-                        <div class="server server-1"></div>
-                        <div class="server server-2"></div>
-                        <div class="server server-3"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 4: Experience Part 1 -->
-            <section class="journey-section section-experience" id="experience">
-                <div class="section-content">
-                    <h2 class="section-title">Experience</h2>
-                    <div class="experience-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <span class="company-icon">🏥</span>
-                                <h3>Lead Data Engineer</h3>
-                                <span class="company">Ametris</span>
-                                <span class="period">Jan 2025 - Present</span>
-                                <p class="job-desc">Healthcare data operations, ETL pipelines with Airflow & Redshift,
-                                    automating data processes.</p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <span class="company-icon">💊</span>
-                                <h3>Lead Data Engineer</h3>
-                                <span class="company">Biofourmis</span>
-                                <span class="period">Dec 2021 - Dec 2024</span>
-                                <p class="job-desc">Built ETL pipelines from scratch on AWS, complex data
-                                    transformations, BI with Tableau.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="milestone-flags">
-                        <div class="flag flag-1">🚀</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 5: Experience Part 2 -->
-            <section class="journey-section section-experience" id="experience2">
-                <div class="section-content">
-                    <h2 class="section-title">Experience</h2>
-                    <div class="experience-timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <span class="company-icon">🤖</span>
-                                <h3>Data Engineer</h3>
-                                <span class="company">Tribes.AI</span>
-                                <span class="period">Mar 2021 - Nov 2021</span>
-                                <p class="job-desc">Product development for time tracking based on user tasks and tools.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <span class="company-icon">💻</span>
-                                <h3>Systems Engineer</h3>
-                                <span class="company">Infosys</span>
-                                <span class="period">Jul 2018 - Mar 2021</span>
-                                <p class="job-desc">Real-time learning platforms, data pipeline development, system
-                                    automation.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="milestone-flags">
-                        <div class="flag flag-2">📈</div>
-                        <div class="flag flag-3">🎯</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 6: Contact -->
-            <section class="journey-section section-contact" id="contact">
-                <div class="section-content">
-                    <h2 class="section-title">Let's Connect</h2>
-                    <div class="contact-card">
-                        <p class="contact-message">Ready to build something amazing together?</p>
-                        <div class="contact-links">
-                            <a href="mailto:akst31@yahoo.com" class="contact-btn primary">
-                                <span class="btn-icon">📧</span>
-                                <span>Email Me</span>
-                            </a>
-                            <a href="https://github.com/akshant31" class="contact-btn secondary" target="_blank">
-                                <span class="btn-icon">💻</span>
-                                <span>GitHub</span>
-                            </a>
-                            <a href="https://linkedin.com/in/akshant" class="contact-btn secondary" target="_blank">
-                                <span class="btn-icon">🔗</span>
-                                <span>LinkedIn</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="ground-elements">
-                    <div class="destination-flag">
-                        <div class="flag-pole"></div>
-                        <div class="flag-banner">🏁</div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-    </div>
-
-    <!-- Navigation Pills -->
-    <nav class="nav-pills" id="navPills">
-        <a href="#hero" class="nav-pill active" data-section="0">
-            <span class="pill-icon">🏠</span>
-            <span class="pill-text">Home</span>
-        </a>
-        <a href="#about" class="nav-pill" data-section="1">
-            <span class="pill-icon">👤</span>
-            <span class="pill-text">About</span>
-        </a>
-        <a href="#skills" class="nav-pill" data-section="2">
-            <span class="pill-icon">💻</span>
-            <span class="pill-text">Skills</span>
-        </a>
-        <a href="#experience" class="nav-pill" data-section="3">
-            <span class="pill-icon">📈</span>
-            <span class="pill-text">Exp 1</span>
-        </a>
-        <a href="#experience2" class="nav-pill" data-section="4">
-            <span class="pill-icon">📊</span>
-            <span class="pill-text">Exp 2</span>
-        </a>
-        <a href="#contact" class="nav-pill" data-section="5">
-            <span class="pill-icon">📧</span>
-            <span class="pill-text">Contact</span>
-        </a>
     </nav>
+
+    <!-- Mobile nav overlay -->
+    <div class="mobile-nav" id="mobileNav">
+        <button class="mobile-nav-close" id="mobileNavClose">✕</button>
+        <a href="#hero"       class="m-link" data-section="hero">Home</a>
+        <a href="#about"      class="m-link" data-section="about">About</a>
+        <a href="#skills"     class="m-link" data-section="skills">Skills</a>
+        <a href="#experience" class="m-link" data-section="experience">Experience</a>
+        <a href="#contact"    class="m-link" data-section="contact">Contact</a>
+    </div>
+
+    <!-- ======= MAIN ======= -->
+    <main id="main">
+
+        <!-- ===== HERO ===== -->
+        <section id="hero" class="section s-hero">
+            <div class="hero-glow glow-a"></div>
+            <div class="hero-glow glow-b"></div>
+
+            <div class="hero-content">
+                <div class="hero-eyebrow">
+                    <span class="eyebrow-line"></span>
+                    <span class="eyebrow-text">HELLO, I'M</span>
+                    <span class="eyebrow-line"></span>
+                </div>
+
+                <h1 class="hero-name" id="heroName">
+                    <span class="nc" style="--i:0">A</span><span class="nc" style="--i:1">k</span><span class="nc" style="--i:2">s</span><span class="nc" style="--i:3">h</span><span class="nc" style="--i:4">a</span><span class="nc" style="--i:5">n</span><span class="nc" style="--i:6">t</span><span class="ns"> </span><span class="nc" style="--i:8">K</span><span class="nc" style="--i:9">u</span><span class="nc" style="--i:10">m</span><span class="nc" style="--i:11">a</span><span class="nc" style="--i:12">r</span>
+                </h1>
+
+                <div class="hero-role">
+                    <span class="role-brace">{</span>
+                    <span id="typedText" class="role-text"></span>
+                    <span class="role-caret">_</span>
+                    <span class="role-brace">}</span>
+                </div>
+
+                <p class="hero-tagline">Transforming Data into Intelligence</p>
+
+                <div class="hero-actions">
+                    <button class="btn-primary magnetic" onclick="scrollToSection('contact')">
+                        <span class="btn-txt">Get in Touch</span>
+                        <div class="btn-ripple"></div>
+                    </button>
+                    <button class="btn-ghost magnetic" onclick="scrollToSection('experience')">
+                        <span>View Work ↓</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floating 3D cards -->
+            <div class="hero-floats" id="heroFloats">
+                <div class="float-chip fc1" data-parallax="0.04">
+                    <span class="fc-emoji">⚡</span><span class="fc-lbl">Real-time Pipelines</span>
+                </div>
+                <div class="float-chip fc2" data-parallax="0.07">
+                    <span class="fc-emoji">☁️</span><span class="fc-lbl">Cloud Native</span>
+                </div>
+                <div class="float-chip fc3" data-parallax="0.03">
+                    <span class="fc-emoji">🔮</span><span class="fc-lbl">ML Models</span>
+                </div>
+                <div class="float-chip fc4" data-parallax="0.06">
+                    <span class="fc-emoji">📊</span><span class="fc-lbl">Big Data</span>
+                </div>
+            </div>
+
+            <div class="scroll-cue">
+                <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+                <span class="scroll-txt">Scroll to explore</span>
+            </div>
+        </section>
+
+        <!-- ===== ABOUT ===== -->
+        <section id="about" class="section s-about">
+            <div class="section-head reveal">
+                <span class="s-tag">01 / About</span>
+                <h2 class="s-title">Who I Am</h2>
+            </div>
+
+            <div class="about-layout">
+                <div class="about-bio tilt-card reveal">
+                    <div class="tilt-body">
+                        <div class="bio-avatar">👨‍💻</div>
+                        <h3 class="bio-heading">Data Architect & Engineer</h3>
+                        <p class="bio-text">I craft the invisible infrastructure that powers data-driven decisions. From building real-time learning platforms at Infosys to healthcare data operations at Ametris, I've architected systems that process millions of records daily.</p>
+                        <p class="bio-text" style="margin-top:12px">My toolkit: <strong>Spark & Kafka</strong> for streaming, <strong>Airflow</strong> for orchestration, <strong>AWS & Azure</strong> for cloud infrastructure.</p>
+                        <div class="bio-badges">
+                            <span class="badge badge-cyan">Lead Engineer</span>
+                            <span class="badge badge-green">● Open to Work</span>
+                        </div>
+                    </div>
+                    <div class="card-glare"></div>
+                </div>
+
+                <div class="about-side">
+                    <div class="stat-card tilt-card reveal" style="--d:0.1s">
+                        <div class="tilt-body">
+                            <span class="stat-val" data-target="7">0</span>
+                            <span class="stat-suf">+</span>
+                            <span class="stat-lbl">Years Experience</span>
+                            <div class="stat-bar"><div class="stat-fill" style="--w:70%"></div></div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="stat-card tilt-card reveal" style="--d:0.2s">
+                        <div class="tilt-body">
+                            <span class="stat-val" data-target="4">0</span>
+                            <span class="stat-suf">+</span>
+                            <span class="stat-lbl">Companies</span>
+                            <div class="stat-bar"><div class="stat-fill" style="--w:40%"></div></div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="stat-card tilt-card reveal" style="--d:0.3s">
+                        <div class="tilt-body">
+                            <span class="stat-val" data-target="12">0</span>
+                            <span class="stat-suf">+</span>
+                            <span class="stat-lbl">Technologies</span>
+                            <div class="stat-bar"><div class="stat-fill" style="--w:80%"></div></div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="terminal-card reveal" style="--d:0.4s">
+                        <div class="term-bar">
+                            <span class="dot d-r"></span>
+                            <span class="dot d-y"></span>
+                            <span class="dot d-g"></span>
+                            <span class="term-name">terminal</span>
+                        </div>
+                        <div class="term-body">
+                            <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">whoami</span></div>
+                            <div class="t-out">akshant_kumar</div>
+                            <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">cat role.txt</span></div>
+                            <div class="t-out">Lead Data Engineer</div>
+                            <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">echo $STATUS</span></div>
+                            <div class="t-out t-green">● Active &amp; Building</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SKILLS ===== -->
+        <section id="skills" class="section s-skills">
+            <div class="section-head reveal">
+                <span class="s-tag">02 / Skills</span>
+                <h2 class="s-title">Arsenal</h2>
+            </div>
+
+            <div class="skills-layout">
+                <div class="cloud-wrap reveal">
+                    <div class="cloud-label">Hover to explore</div>
+                    <div class="cloud-sphere" id="cloudSphere"></div>
+                </div>
+
+                <div class="skill-cats">
+                    <div class="scat tilt-card reveal" style="--d:0s">
+                        <div class="tilt-body">
+                            <div class="scat-head"><span class="scat-icon">⌨️</span><h3>Languages</h3></div>
+                            <div class="scat-tags">
+                                <span class="stag">Python</span>
+                                <span class="stag">SQL</span>
+                                <span class="stag">Java</span>
+                                <span class="stag">Scala</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="scat tilt-card reveal" style="--d:0.1s">
+                        <div class="tilt-body">
+                            <div class="scat-head"><span class="scat-icon">🔥</span><h3>Big Data</h3></div>
+                            <div class="scat-tags">
+                                <span class="stag">Apache Spark</span>
+                                <span class="stag">Kafka</span>
+                                <span class="stag">Airflow</span>
+                                <span class="stag">Hadoop</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="scat tilt-card reveal" style="--d:0.2s">
+                        <div class="tilt-body">
+                            <div class="scat-head"><span class="scat-icon">🗄️</span><h3>Databases</h3></div>
+                            <div class="scat-tags">
+                                <span class="stag">PostgreSQL</span>
+                                <span class="stag">MongoDB</span>
+                                <span class="stag">Redshift</span>
+                                <span class="stag">Elasticsearch</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+
+                    <div class="scat tilt-card reveal" style="--d:0.3s">
+                        <div class="tilt-body">
+                            <div class="scat-head"><span class="scat-icon">☁️</span><h3>Cloud & DevOps</h3></div>
+                            <div class="scat-tags">
+                                <span class="stag">AWS</span>
+                                <span class="stag">Azure</span>
+                                <span class="stag">GCP</span>
+                                <span class="stag">Docker</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EXPERIENCE ===== -->
+        <section id="experience" class="section s-exp">
+            <div class="section-head reveal">
+                <span class="s-tag">03 / Experience</span>
+                <h2 class="s-title">Journey</h2>
+            </div>
+
+            <div class="timeline">
+                <div class="tl-spine"></div>
+
+                <div class="tl-item tl-r reveal">
+                    <div class="tl-marker"><div class="tl-pulse"></div></div>
+                    <div class="tl-card tilt-card">
+                        <div class="tilt-body">
+                            <div class="tl-top">
+                                <span class="tl-ico">🏥</span>
+                                <div class="tl-meta">
+                                    <h3 class="tl-role">Lead Data Engineer</h3>
+                                    <span class="tl-co">Ametris</span>
+                                </div>
+                                <span class="tl-period">Jan 2025 – Present</span>
+                            </div>
+                            <p class="tl-desc">Healthcare data operations, ETL pipelines with Airflow & Redshift, automating data processes for improved efficiency across clinical workflows.</p>
+                            <div class="tl-chips">
+                                <span class="chip">Airflow</span>
+                                <span class="chip">Redshift</span>
+                                <span class="chip">Healthcare ETL</span>
+                                <span class="chip chip-live">● Current</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+                </div>
+
+                <div class="tl-item tl-l reveal">
+                    <div class="tl-marker"><div class="tl-pulse"></div></div>
+                    <div class="tl-card tilt-card">
+                        <div class="tilt-body">
+                            <div class="tl-top">
+                                <span class="tl-ico">💊</span>
+                                <div class="tl-meta">
+                                    <h3 class="tl-role">Lead Data Engineer</h3>
+                                    <span class="tl-co">Biofourmis</span>
+                                </div>
+                                <span class="tl-period">Dec 2021 – Dec 2024</span>
+                            </div>
+                            <p class="tl-desc">Built ETL pipelines from scratch on AWS. Complex data transformations and BI dashboards with Tableau for real-world health analytics.</p>
+                            <div class="tl-chips">
+                                <span class="chip">AWS</span>
+                                <span class="chip">Tableau</span>
+                                <span class="chip">ETL</span>
+                                <span class="chip">Spark</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+                </div>
+
+                <div class="tl-item tl-r reveal">
+                    <div class="tl-marker"><div class="tl-pulse"></div></div>
+                    <div class="tl-card tilt-card">
+                        <div class="tilt-body">
+                            <div class="tl-top">
+                                <span class="tl-ico">🤖</span>
+                                <div class="tl-meta">
+                                    <h3 class="tl-role">Data Engineer</h3>
+                                    <span class="tl-co">Tribes.AI</span>
+                                </div>
+                                <span class="tl-period">Mar 2021 – Nov 2021</span>
+                            </div>
+                            <p class="tl-desc">Product development for intelligent time tracking based on user tasks and tools. Built streaming data infrastructure from ground up.</p>
+                            <div class="tl-chips">
+                                <span class="chip">Python</span>
+                                <span class="chip">Kafka</span>
+                                <span class="chip">ML</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+                </div>
+
+                <div class="tl-item tl-l reveal">
+                    <div class="tl-marker"><div class="tl-pulse"></div></div>
+                    <div class="tl-card tilt-card">
+                        <div class="tilt-body">
+                            <div class="tl-top">
+                                <span class="tl-ico">💻</span>
+                                <div class="tl-meta">
+                                    <h3 class="tl-role">Systems Engineer</h3>
+                                    <span class="tl-co">Infosys</span>
+                                </div>
+                                <span class="tl-period">Jul 2018 – Mar 2021</span>
+                            </div>
+                            <p class="tl-desc">Real-time learning platforms, data pipeline development, and system automation for enterprise-scale applications serving millions of users.</p>
+                            <div class="tl-chips">
+                                <span class="chip">Spark</span>
+                                <span class="chip">Java</span>
+                                <span class="chip">Automation</span>
+                                <span class="chip">Enterprise</span>
+                            </div>
+                        </div>
+                        <div class="card-glare"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CONTACT ===== -->
+        <section id="contact" class="section s-contact">
+            <div class="section-head reveal">
+                <span class="s-tag">04 / Contact</span>
+                <h2 class="s-title">Let's Build</h2>
+            </div>
+
+            <div class="contact-layout">
+                <div class="contact-card tilt-card reveal">
+                    <div class="tilt-body">
+                        <div class="cc-glow"></div>
+                        <p class="cc-headline">Ready to transform data<br>into something extraordinary?</p>
+                        <p class="cc-sub">Open to data engineering roles, consulting, and innovative collaborations. Let's create impact together.</p>
+
+                        <div class="cc-links">
+                            <a href="mailto:akst31@yahoo.com" class="cc-link cc-primary magnetic">
+                                <span class="cc-li-icon">📧</span>
+                                <div class="cc-li-text">
+                                    <span class="cc-li-label">Email</span>
+                                    <span class="cc-li-val">akst31@yahoo.com</span>
+                                </div>
+                                <span class="cc-li-arr">→</span>
+                            </a>
+                            <a href="https://github.com/akshant31" class="cc-link magnetic" target="_blank" rel="noopener">
+                                <span class="cc-li-icon">💻</span>
+                                <div class="cc-li-text">
+                                    <span class="cc-li-label">GitHub</span>
+                                    <span class="cc-li-val">github.com/akshant31</span>
+                                </div>
+                                <span class="cc-li-arr">→</span>
+                            </a>
+                            <a href="https://linkedin.com/in/akshant" class="cc-link magnetic" target="_blank" rel="noopener">
+                                <span class="cc-li-icon">🔗</span>
+                                <div class="cc-li-text">
+                                    <span class="cc-li-label">LinkedIn</span>
+                                    <span class="cc-li-val">linkedin.com/in/akshant</span>
+                                </div>
+                                <span class="cc-li-arr">→</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-glare"></div>
+                </div>
+
+                <div class="status-card reveal" style="--d:0.2s">
+                    <div class="sc-header">
+                        <span class="sc-title">Current Status</span>
+                        <span class="sc-live">● LIVE</span>
+                    </div>
+                    <div class="sc-rows">
+                        <div class="sc-row">
+                            <span class="sc-lbl">Location</span>
+                            <span class="sc-val">🌍 Remote / Global</span>
+                        </div>
+                        <div class="sc-row">
+                            <span class="sc-lbl">Availability</span>
+                            <span class="sc-val sc-green">● Available Now</span>
+                        </div>
+                        <div class="sc-row">
+                            <span class="sc-lbl">Timezone</span>
+                            <span class="sc-val">EST / Flexible</span>
+                        </div>
+                        <div class="sc-row">
+                            <span class="sc-lbl">Response</span>
+                            <span class="sc-val">&lt; 24 hours</span>
+                        </div>
+                        <div class="sc-row">
+                            <span class="sc-lbl">Role Type</span>
+                            <span class="sc-val">Full-time / Contract</span>
+                        </div>
+                    </div>
+                    <div class="sc-pulse-ring"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <p>Crafted with <span class="heart">♥</span> & Three.js · Akshant Kumar · 2025</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
