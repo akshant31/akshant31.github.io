@@ -37,8 +37,14 @@
     const ptGeo = new THREE.BufferGeometry();
     ptGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
+    /* --- Theme-aware colours --- */
+    const DARK_COLORS  = { pt: 0x00d4ff, ln: 0x00d4ff };
+    const LIGHT_COLORS = { pt: 0x6366f1, ln: 0x6366f1 };
+    function isLight() { return document.documentElement.getAttribute('data-theme') === 'light'; }
+    function themeColors() { return isLight() ? LIGHT_COLORS : DARK_COLORS; }
+
     const ptMat = new THREE.PointsMaterial({
-        color: 0x00d4ff,
+        color: themeColors().pt,
         size: 0.055,
         transparent: true,
         opacity: 0.65,
@@ -56,7 +62,7 @@
     lineGeo.setDrawRange(0, 0);
 
     const lineMat = new THREE.LineBasicMaterial({
-        color: 0x00d4ff,
+        color: themeColors().ln,
         transparent: true,
         opacity: 0.1
     });
@@ -65,21 +71,38 @@
     scene.add(linesMesh);
 
     /* --- Floating Wireframe Geometries --- */
+    const DARK_SHAPE_COLORS  = [0x00d4ff, 0x9d4edd, 0xff006e, 0x00ff88, 0xff8c00];
+    const LIGHT_SHAPE_COLORS = [0x6366f1, 0xec4899, 0xf59e0b, 0x10b981, 0x0ea5e9];
+
     const shapes = [
-        { geo: new THREE.IcosahedronGeometry(.55, 1), color: 0x00d4ff,  x:  4,  y:  2, z:  0 },
-        { geo: new THREE.OctahedronGeometry(.45),     color: 0x9d4edd,  x: -4,  y: -2, z: -1 },
-        { geo: new THREE.TorusGeometry(.35, .12, 8, 24), color: 0xff006e, x:  3, y: -3, z:  1 },
-        { geo: new THREE.IcosahedronGeometry(.3, 0),  color: 0x00ff88,  x: -3,  y:  3, z: -.5 },
-        { geo: new THREE.OctahedronGeometry(.25),     color: 0xff8c00,  x:  0,  y:  4, z: -1 }
+        { geo: new THREE.IcosahedronGeometry(.55, 1), x:  4,  y:  2, z:  0 },
+        { geo: new THREE.OctahedronGeometry(.45),     x: -4,  y: -2, z: -1 },
+        { geo: new THREE.TorusGeometry(.35, .12, 8, 24), x:  3, y: -3, z:  1 },
+        { geo: new THREE.IcosahedronGeometry(.3, 0),  x: -3,  y:  3, z: -.5 },
+        { geo: new THREE.OctahedronGeometry(.25),     x:  0,  y:  4, z: -1 }
     ];
 
-    const meshes = shapes.map(s => {
-        const mat  = new THREE.MeshBasicMaterial({ color: s.color, wireframe: true, transparent: true, opacity: .35 });
-        const mesh = new THREE.Mesh(s.geo, mat);
+    const shapeMats = shapes.map((_s, i) => {
+        const cols = isLight() ? LIGHT_SHAPE_COLORS : DARK_SHAPE_COLORS;
+        return new THREE.MeshBasicMaterial({ color: cols[i], wireframe: true, transparent: true, opacity: .35 });
+    });
+
+    const meshes = shapes.map((s, i) => {
+        const mesh = new THREE.Mesh(s.geo, shapeMats[i]);
         mesh.position.set(s.x, s.y, s.z);
         scene.add(mesh);
         return mesh;
     });
+
+    /* --- Update colours when theme toggles --- */
+    const themeObserver = new MutationObserver(() => {
+        const c = themeColors();
+        ptMat.color.set(c.pt);
+        lineMat.color.set(c.ln);
+        const cols = isLight() ? LIGHT_SHAPE_COLORS : DARK_SHAPE_COLORS;
+        shapeMats.forEach((m, i) => m.color.set(cols[i]));
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     /* --- Mouse Parallax --- */
     const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -765,7 +788,7 @@ window.scrollToSection = scrollToSection;
 (function initTheme() {
     const btn  = document.getElementById('themeBtn');
     const html = document.documentElement;
-    const stored = localStorage.getItem('theme') || 'dark';
+    const stored = localStorage.getItem('theme') || 'light';
     html.setAttribute('data-theme', stored);
 
     if (btn) {
@@ -814,4 +837,63 @@ window.scrollToSection = scrollToSection;
 (function updateYear() {
     const el = document.querySelector('.footer-year');
     if (el) el.textContent = '© ' + new Date().getFullYear();
+})();
+
+/* ================================================================
+   TOUR GUIDE BOT — scroll-driven character with expressions
+   ================================================================ */
+(function initTourBot() {
+    const bot    = document.getElementById('tour-bot');
+    const bubble = document.getElementById('botBubble');
+    const msgEl  = document.getElementById('botMsg');
+    if (!bot || !bubble || !msgEl) return;
+
+    const STATES = {
+        hero:       { expr: 'hero',       msg: "Hi! I'm Bot-AK — your tour guide! 🚀" },
+        about:      { expr: 'about',      msg: "Here's the story of a great data engineer! 🧠" },
+        skills:     { expr: 'skills',     msg: "Wow! Look at all these amazing skills! ⚡" },
+        experience: { expr: 'experience', msg: "7+ years across 4 awesome companies! 💼" },
+        contact:    { expr: 'contact',    msg: "Let's connect! Drop Akshant a message! 💌" },
+    };
+
+    let currentSection = '';
+
+    function setState(sectionId) {
+        const s = STATES[sectionId];
+        if (!s || sectionId === currentSection) return;
+        currentSection = sectionId;
+
+        /* Swap expression class */
+        bot.setAttribute('data-expr', s.expr);
+
+        /* Animate bubble: hide → swap text → show */
+        bubble.classList.remove('show');
+        setTimeout(() => {
+            msgEl.textContent = s.msg;
+            bubble.classList.add('show');
+        }, 240);
+    }
+
+    /* Initial state */
+    bot.setAttribute('data-expr', 'hero');
+    msgEl.textContent = STATES.hero.msg;
+    setTimeout(() => bubble.classList.add('show'), 1900);
+
+    /* IntersectionObserver — activate when section ≥ 35% visible */
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) setState(e.target.id);
+        });
+    }, { threshold: 0.35 });
+
+    ['hero', 'about', 'skills', 'experience', 'contact'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) obs.observe(el);
+    });
+
+    /* Click the bot figure to toggle bubble */
+    const fig = bot.querySelector('.bot-figure');
+    if (fig) {
+        fig.addEventListener('click', () => bubble.classList.toggle('show'));
+    }
 })();
