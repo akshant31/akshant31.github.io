@@ -767,13 +767,14 @@ ol {
 
 /* ===== PARALLAX LAYERS ===== */
 .parallax-layer {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 200%;
     height: 100%;
     pointer-events: none;
     z-index: -1;
+    transform-style: preserve-3d;
 }
 
 .layer-stars {
@@ -3014,4 +3015,736 @@ ol {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--color-accent-cyan);
+}
+
+/* =====================================
+   CINEMATIC 3D SCROLL SYSTEM
+   A journey through the Data Dimension
+   ===================================== */
+
+/* ===== 3D VIEWPORT & WORLD ===== */
+.viewport-3d {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    perspective: 2000px;
+    perspective-origin: 50% 50%;
+    overflow: hidden;
+    z-index: 5;
+    transform-style: preserve-3d;
+}
+
+.world-3d {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* ===== 3D SECTIONS ===== */
+.section-3d {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    padding: 60px 80px;
+    padding-right: 120px;
+    box-sizing: border-box;
+    overflow: visible;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+}
+
+.section-3d-content {
+    width: 100%;
+    min-height: 100%;
+    transform-style: preserve-3d;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+}
+
+/* ===== DEPTH INDICATOR ===== */
+.depth-indicator {
+    position: fixed;
+    left: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 800;
+    pointer-events: none;
+}
+
+.depth-line {
+    width: 2px;
+    height: 200px;
+    background: var(--color-glass-border);
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.depth-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    background: linear-gradient(180deg, var(--color-accent-cyan), var(--color-accent-purple));
+    border-radius: 1px;
+    transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px var(--color-accent-cyan);
+}
+
+.depth-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: flex-start;
+}
+
+.depth-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.15em;
+    opacity: 0.4;
+    transition: all 0.4s ease;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+}
+
+.depth-label.active {
+    opacity: 1;
+    color: var(--color-accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* ===== 3D PLANETS ===== */
+.planet {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.planet-1 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle at 30% 30%, #4a3f6a, #1a1a3a);
+    top: 10%;
+    left: 60%;
+    opacity: 0.5;
+    box-shadow: inset -20px -20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.planet-2 {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at 30% 30%, var(--color-accent-cyan), #0a5060);
+    top: 60%;
+    left: 20%;
+    opacity: 0.4;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+}
+
+.planet-3 {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle at 30% 30%, #ff9500, #8a4000);
+    top: 30%;
+    left: 140%;
+    opacity: 0.3;
+}
+
+.planet-4 {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 30% 30%, var(--color-accent-pink), #5a0035);
+    top: 80%;
+    left: 80%;
+    opacity: 0.35;
+    box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+    animation: floatPlanet 20s ease-in-out infinite;
+}
+
+.planet-5 {
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle at 30% 30%, var(--color-accent-green), #0a5030);
+    top: 15%;
+    left: 10%;
+    opacity: 0.25;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);
+    animation: floatPlanet 25s ease-in-out infinite reverse;
+}
+
+@keyframes floatPlanet {
+    0%, 100% {
+        transform: translateZ(var(--planet-z, 0)) translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateZ(var(--planet-z, 0)) translateY(-30px) rotate(180deg);
+    }
+}
+
+/* ===== 3D FLOATING TEXT ===== */
+.floating-text {
+    transform: translateZ(var(--z, -100px));
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* ===== 3D DATA NODES ===== */
+.data-node {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.3s ease;
+}
+
+.data-node:hover {
+    transform: translateZ(var(--node-depth, 0)) scale(1.2);
+}
+
+/* ===== 3D SKILL VISUALIZATION ===== */
+.skills-visualization {
+    transform-style: preserve-3d;
+    perspective: 800px;
+}
+
+.skill-orbit {
+    transform-style: preserve-3d;
+}
+
+.orbit-1 {
+    transform: rotateX(60deg);
+}
+
+.orbit-2 {
+    transform: rotateX(60deg) rotateZ(30deg);
+}
+
+.skill-node {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.skill-node:hover {
+    transform: rotate(var(--angle)) translateX(150px) rotate(calc(-1 * var(--angle))) translateZ(30px) scale(1.2);
+}
+
+.orbit-2 .skill-node:hover {
+    transform: rotate(var(--angle)) translateX(225px) rotate(calc(-1 * var(--angle))) translateZ(30px) scale(1.2);
+}
+
+.skill-central {
+    transform: translateZ(50px);
+    transform-style: preserve-3d;
+}
+
+/* ===== 3D EXPERIENCE CARDS ===== */
+.experience-card {
+    transform-style: preserve-3d;
+    transition: all var(--transition-medium), transform 0.3s ease;
+}
+
+.experience-card:hover {
+    transform: translateY(-5px) translateZ(20px);
+    border-color: var(--color-accent-cyan);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 212, 255, 0.1);
+}
+
+/* ===== 3D CONTACT PANEL ===== */
+.contact-panel {
+    transform-style: preserve-3d;
+    transition: all var(--transition-medium);
+}
+
+.contact-panel:hover {
+    transform: translateZ(15px);
+}
+
+/* ===== 3D STAT ITEMS ===== */
+.stat-item {
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateZ(20px);
+}
+
+/* ===== 3D TERMINAL ===== */
+.terminal-window {
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+}
+
+.terminal-window:hover {
+    transform: translateZ(10px) rotateY(-2deg);
+}
+
+/* ===== 3D AVATAR ===== */
+.about-avatar-container {
+    transform-style: preserve-3d;
+    perspective: 600px;
+}
+
+.avatar-placeholder {
+    transform: translateZ(30px);
+    transform-style: preserve-3d;
+}
+
+.avatar-ring {
+    transform: translateZ(10px);
+}
+
+.avatar-ring.ring-2 {
+    transform: translateZ(20px);
+}
+
+/* ===== 3D HERO ASTRONAUT ===== */
+.hero-astronaut {
+    transform-style: preserve-3d;
+    perspective: 600px;
+}
+
+.astronaut-body {
+    transform-style: preserve-3d;
+}
+
+.astronaut-helmet {
+    transform: translateZ(20px);
+}
+
+.astronaut-laptop {
+    transform: translateZ(30px);
+}
+
+/* ===== 3D BUTTONS ===== */
+.btn {
+    transform-style: preserve-3d;
+    transition: all var(--transition-medium), transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) translateZ(10px);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px) translateZ(10px);
+}
+
+/* ===== 3D SKILL CATEGORIES ===== */
+.skill-category {
+    transform-style: preserve-3d;
+    transition: all var(--transition-medium), transform 0.3s ease;
+}
+
+.skill-category:hover {
+    border-color: var(--color-accent-cyan);
+    transform: translateX(10px) translateZ(15px);
+}
+
+/* ===== 3D CONTACT LINKS ===== */
+.contact-link {
+    transform-style: preserve-3d;
+    transition: all var(--transition-medium), transform 0.3s ease;
+}
+
+.contact-link:hover {
+    border-color: var(--color-accent-cyan);
+    transform: translateX(10px) translateZ(20px);
+    box-shadow: var(--glow-cyan);
+}
+
+/* ===== SCROLL TRACKER (invisible, provides scroll height) ===== */
+.scroll-tracker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ===== ENHANCED 3D ANIMATIONS ===== */
+
+/* Section entrance from depth */
+@keyframes sectionEnter3D {
+    from {
+        opacity: 0;
+        transform: translateZ(-500px) rotateX(15deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateZ(0) rotateX(0deg);
+    }
+}
+
+@keyframes sectionExit3D {
+    from {
+        opacity: 1;
+        transform: translateZ(0) rotateX(0deg);
+    }
+    to {
+        opacity: 0;
+        transform: translateZ(300px) rotateX(-15deg);
+    }
+}
+
+/* Holographic shimmer for 3D elements */
+@keyframes hologramShimmer {
+    0%, 100% {
+        opacity: 0.8;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        filter: hue-rotate(15deg);
+    }
+}
+
+/* 3D float with rotation */
+@keyframes float3D {
+    0%, 100% {
+        transform: translateZ(var(--float-z, 0)) translateY(0) rotateY(0deg);
+    }
+    25% {
+        transform: translateZ(var(--float-z, 0)) translateY(-15px) rotateY(5deg);
+    }
+    75% {
+        transform: translateZ(var(--float-z, 0)) translateY(10px) rotateY(-5deg);
+    }
+}
+
+/* Pulse glow for 3D elements */
+@keyframes pulseGlow3D {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(0, 212, 255, 0.6), 0 0 60px rgba(157, 78, 221, 0.3);
+    }
+}
+
+/* ===== 3D LIGHT THEME ADJUSTMENTS ===== */
+[data-theme="light"] .viewport-3d {
+    perspective: 2000px;
+}
+
+[data-theme="light"] .depth-line {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .depth-marker {
+    background: linear-gradient(180deg, var(--color-accent-cyan), var(--color-accent-purple));
+}
+
+[data-theme="light"] .depth-label.active {
+    color: var(--color-accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 149, 179, 0.3);
+}
+
+/* ===== 3D RESPONSIVE ===== */
+@media (max-width: 1200px) {
+    .section-3d {
+        padding: 60px;
+        padding-right: 100px;
+    }
+    
+    .depth-indicator {
+        left: 15px;
+    }
+    
+    .depth-labels {
+        gap: 15px;
+    }
+    
+    .depth-label {
+        font-size: 0.55rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .section-3d {
+        padding: 80px 30px;
+        padding-right: 80px;
+    }
+    
+    .depth-indicator {
+        display: none;
+    }
+    
+    .viewport-3d {
+        perspective: 1200px;
+    }
+    
+    .planet-4,
+    .planet-5 {
+        display: none;
+    }
+    
+    .orbit-1 {
+        transform: rotateX(45deg);
+    }
+    
+    .orbit-2 {
+        transform: rotateX(45deg) rotateZ(15deg);
+    }
+}
+
+@media (max-width: 480px) {
+    .section-3d {
+        padding: 60px 20px;
+        padding-right: 70px;
+    }
+    
+    .viewport-3d {
+        perspective: 1000px;
+    }
+    
+    .skill-orbit {
+        transform: rotateX(30deg) !important;
+    }
+}
+
+/* ===== HIDE ORIGINAL SCROLL CONTAINER (content moved to 3D viewport) ===== */
+.scroll-container,
+.sections-wrapper {
+    display: none;
+}
+
+/* ===== ENHANCED PARTICLES FOR 3D ===== */
+.particle {
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+}
+
+/* ===== 3D SIGNAL WAVES ===== */
+.signal-waves {
+    transform-style: preserve-3d;
+    perspective: 200px;
+}
+
+.wave {
+    transform: translateZ(0);
+}
+
+
+/* ===== 3D COMPACT TIMELINE ===== */
+.section-3d .timeline {
+    gap: 30px;
+}
+
+.section-3d .experience-card {
+    padding: 20px 25px;
+}
+
+.section-3d .card-role {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.section-3d .card-description ul {
+    gap: 5px;
+}
+
+.section-3d .card-description li {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.section-3d .card-tech {
+    gap: 6px;
+}
+
+.section-3d .tech-tag {
+    padding: 3px 10px;
+    font-size: 0.7rem;
+}
+
+/* Smooth opacity transitions for 3D sections */
+.section-3d-content {
+    transition: opacity 0.15s ease-out;
+}
+
+/* 3D section header compact */
+.section-3d .section-header {
+    margin-bottom: 30px;
+}
+
+/* 3D about section compact */
+.section-3d .about-content {
+    gap: 40px;
+}
+
+.section-3d .about-description {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.section-3d .about-stats {
+    gap: 30px;
+    padding-top: 10px;
+}
+
+.section-3d .stat-number {
+    font-size: 2.5rem;
+}
+
+/* 3D skills section compact */
+.section-3d .skills-container {
+    gap: 30px;
+}
+
+.section-3d .skills-visualization {
+    height: 380px;
+}
+
+.section-3d .skill-category {
+    padding: 18px;
+}
+
+.section-3d .category-title {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+.section-3d .skill-tag {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+/* 3D contact section compact */
+.section-3d .contact-content {
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.section-3d .contact-heading {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.section-3d .contact-description {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.section-3d .contact-link {
+    padding: 15px;
+    gap: 15px;
+}
+
+.section-3d .link-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+}
+
+.section-3d .contact-footer {
+    padding-top: 20px;
+}
+
+/* 3D hero compact */
+.section-3d .hero-content {
+    gap: 20px;
+}
+
+.section-3d .hero-name {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+}
+
+.section-3d .hero-title {
+    font-size: 1.5rem;
+}
+
+.section-3d .hero-tagline {
+    font-size: 1rem;
+    margin-bottom: 25px;
+}
+
+.section-3d .hero-cta {
+    gap: 15px;
+}
+
+.section-3d .btn {
+    padding: 12px 25px;
+    font-size: 0.95rem;
+}
+
+/* Ensure content fits viewport height */
+@media (min-height: 800px) {
+    .section-3d .timeline {
+        gap: 40px;
+    }
+    
+    .section-3d .experience-card {
+        padding: 25px 30px;
+    }
+    
+    .section-3d .skills-visualization {
+        height: 420px;
+    }
+}
+
+@media (max-height: 700px) {
+    .section-3d {
+        padding: 40px 60px;
+        padding-right: 100px;
+    }
+    
+    .section-3d .hero-name {
+        font-size: 2.8rem;
+    }
+    
+    .section-3d .hero-astronaut {
+        transform: scale(0.8);
+    }
+    
+    .section-3d .timeline {
+        gap: 20px;
+    }
+    
+    .section-3d .experience-card {
+        padding: 15px 20px;
+    }
+    
+    .section-3d .card-role {
+        font-size: 1.1rem;
+    }
+    
+    .section-3d .skills-visualization {
+        height: 320px;
+    }
+    
+    .section-3d .orbit-1 {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .section-3d .orbit-2 {
+        width: 380px;
+        height: 380px;
+    }
+    
+    .section-3d .skill-node {
+        transform: rotate(var(--angle)) translateX(125px) rotate(calc(-1 * var(--angle)));
+    }
+    
+    .section-3d .orbit-2 .skill-node {
+        transform: rotate(var(--angle)) translateX(190px) rotate(calc(-1 * var(--angle)));
+    }
 }
