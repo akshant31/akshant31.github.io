@@ -1,6 +1,6 @@
 /* =====================================
    DATA ENGINEER PORTFOLIO - JAVASCRIPT
-   Cinematic 3D Scroll Experience
+   Cinematic 3D Scroll Experience (Stable)
    ===================================== */
 
 // ===== CONFIGURATION =====
@@ -11,16 +11,14 @@ const CONFIG = {
     scrollThreshold: 0.1,
     animationDuration: 800,
     name: "Akshant Kumar",
-    // 3D Tunnel Config
-    perspective: 2000,
-    fadeStart: 350,
-    fadeEnd: 700,
-    rotateAway: 10,
-    parallaxLayers: {
-        stars: -1800,
-        nebula: -1000,
-        planets: -400
-    }
+    // 3D Config
+    perspective: 1500,
+    tiltEnter: 10,
+    tiltExit: -10,
+    depthEnter: -100,
+    depthExit: -100,
+    yOffsetEnter: 50,
+    yOffsetExit: -50
 };
 
 // ===== DOM ELEMENTS =====
@@ -43,9 +41,7 @@ const elements = {
     sections: document.querySelectorAll('.section-3d'),
     themeToggle: document.getElementById('themeToggle'),
     scrollModeToggle: document.getElementById('scrollModeToggle'),
-    // 3D elements
-    viewport3d: document.getElementById('viewport3d'),
-    world3d: document.getElementById('world3d')
+    main3d: document.getElementById('main3d')
 };
 
 // ===== STATE =====
@@ -60,12 +56,7 @@ let scrollState = {
 let state3D = {
     activeSection: 0,
     prevActiveSection: -1,
-    sectionDepth: 0,
-    worldZ: 0,
-    isInitialized: false,
-    needsUpdate: false,
-    timelineTriggered: false,
-    statsTriggered: false
+    isInitialized: false
 };
 
 // ===== INITIALIZATION =====
@@ -75,137 +66,95 @@ document.addEventListener('DOMContentLoaded', () => {
     initLoader();
     initParticles();
     initTypingEffect();
-    init3D(); // Initialize 3D before scroll effects
     initScrollEffects();
     initNavigation();
     initTimelineAnimations();
     initStatCounters();
     initRevealAnimations();
     initSkillHovers();
-    init3DAnimations(); // Start 3D animation loop
+    init3D();
 });
 
-// ===== 3D TUNNEL SYSTEM =====
+// ===== 3D SCROLL SYSTEM (Stable Section-Based) =====
 function init3D() {
-    const vh = window.innerHeight;
-    state3D.sectionDepth = vh * 1.15;
-
-    const numSections = elements.sections.length;
-    const totalDepth = (numSections - 1) * state3D.sectionDepth;
-
-    // Set body height to enable scrolling through all sections
-    document.body.style.height = `${totalDepth + vh}px`;
-
-    // Position each section in 3D space
-    elements.sections.forEach((section, i) => {
-        section.style.transform = `translateZ(${-i * state3D.sectionDepth}px)`;
-    });
-
-    // Position parallax layers at different depths
-    if (elements.layerStars) {
-        elements.layerStars.style.transform = `translateZ(${CONFIG.parallaxLayers.stars}px)`;
-    }
-    if (elements.layerNebula) {
-        elements.layerNebula.style.transform = `translateZ(${CONFIG.parallaxLayers.nebula}px)`;
-    }
-    if (elements.layerPlanets) {
-        elements.layerPlanets.style.transform = `translateZ(${CONFIG.parallaxLayers.planets}px)`;
-    }
-
-    // Position floating text at their specified Z depths
-    document.querySelectorAll('.floating-text').forEach(el => {
-        const z = el.style.getPropertyValue('--z') || '-100px';
-        el.style.transform = `translateZ(${z})`;
-    });
-
-    // Set CSS custom properties for data nodes
-    document.querySelectorAll('.data-node').forEach(el => {
-        const depth = el.dataset.depth || 0;
-        el.style.setProperty('--node-depth', `${depth}px`);
-        el.style.setProperty('--float-z', `${depth}px`);
-    });
-
-    // Set CSS custom properties for planets
-    document.querySelectorAll('.planet').forEach(el => {
-        const depth = el.dataset.depth || 0;
-        el.style.setProperty('--planet-z', `${depth}px`);
-    });
-
     state3D.isInitialized = true;
 
-    // Handle resize
-    window.addEventListener('resize', debounce(() => {
-        const newVh = window.innerHeight;
-        state3D.sectionDepth = newVh * 1.15;
-        const newTotalDepth = (numSections - 1) * state3D.sectionDepth;
-        document.body.style.height = `${newTotalDepth + newVh}px`;
+    // Set initial 3D states for section contents
+    elements.sections.forEach((section) => {
+        const content = section.querySelector('.section-3d-content');
+        if (content) {
+            // Start with subtle 3D positioning
+            content.style.transformOrigin = 'center center';
+        }
+    });
 
-        elements.sections.forEach((section, i) => {
-            section.style.transform = `translateZ(${-i * state3D.sectionDepth}px)`;
-        });
-
-        state3D.needsUpdate = true;
-    }, 250));
+    // Start the 3D animation loop
+    animate3DLoop();
 }
 
-function update3DWorld() {
+function animate3DLoop() {
+    update3DTransforms();
+    requestAnimationFrame(animate3DLoop);
+}
+
+function update3DTransforms() {
     if (!state3D.isInitialized) return;
 
-    const scrollY = window.scrollY;
-    state3D.worldZ = scrollY;
-
-    // Move the world forward based on scroll
-    if (elements.world3d) {
-        elements.world3d.style.transform = `translateZ(${scrollY}px)`;
-    }
-
+    const vh = window.innerHeight;
     let activeSection = 0;
     let minDistance = Infinity;
-    const numSections = elements.sections.length;
 
     elements.sections.forEach((section, i) => {
-        const absZ = scrollY - i * state3D.sectionDepth;
+        const rect = section.getBoundingClientRect();
         const content = section.querySelector('.section-3d-content');
 
-        // Track closest section to Z=0 (in focus)
-        const distance = Math.abs(absZ);
+        // Section center relative to viewport center
+        const sectionCenter = rect.top + rect.height / 2;
+        const viewportCenter = vh / 2;
+        const distance = Math.abs(sectionCenter - viewportCenter);
+
         if (distance < minDistance) {
             minDistance = distance;
             activeSection = i;
         }
 
-        // Calculate cinematic transforms based on Z position
-        const progress = absZ / state3D.sectionDepth;
-        const clampedProgress = Math.max(-1.2, Math.min(1.2, progress));
+        if (!content) return;
 
-        // Rotation: sections tilt as they approach and recede
-        const rotateX = clampedProgress * -CONFIG.rotateAway;
+        // Calculate how much of the section is visible
+        const visibleTop = Math.max(0, -rect.top);
+        const visibleBottom = Math.min(rect.height, vh - rect.top);
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+        const visibility = Math.min(1, visibleHeight / Math.min(rect.height, vh));
 
-        // Subtle Y rotation for dramatic effect
-        const rotateY = clampedProgress * 2;
-
-        // Scale adjustment (CSS perspective handles most, but we can enhance)
-        const scale = 1 - Math.abs(clampedProgress) * 0.05;
-
-        // Opacity: fade sections as they pass behind camera or go too far
-        let opacity = 1;
-        if (absZ > CONFIG.fadeStart) {
-            opacity = 1 - (absZ - CONFIG.fadeStart) / (CONFIG.fadeEnd - CONFIG.fadeStart);
-        } else if (absZ < -state3D.sectionDepth * 2) {
-            opacity = Math.max(0, 1 - (Math.abs(absZ) - state3D.sectionDepth * 2) / 1000);
-        }
-        opacity = Math.max(0, Math.min(1, opacity));
-
-        if (content) {
-            content.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
-            content.style.opacity = opacity;
+        if (visibility <= 0.01) {
+            content.style.opacity = '0';
+            return;
         }
 
-        // Enable/disable pointer events based on visibility
-        section.style.pointerEvents = (opacity > 0.4 && Math.abs(absZ) < state3D.sectionDepth * 0.9) ? 'auto' : 'none';
+        // Normalized position: -1 (section entering from bottom) to 1 (section exiting to top)
+        // 0 means section is perfectly centered
+        const travelRange = rect.height / 2 + vh / 2;
+        const normalizedPos = (sectionCenter - viewportCenter) / travelRange;
+        const clampedPos = Math.max(-1, Math.min(1, normalizedPos));
+
+        // 3D transforms based on position
+        // Entering (clampedPos < 0): tilt back, come from depth
+        // Centered (clampedPos ≈ 0): flat, full opacity
+        // Exiting (clampedPos > 0): tilt forward, recede into depth
+        const absPos = Math.abs(clampedPos);
+        const direction = clampedPos < 0 ? -1 : 1;
+
+        const rotateX = clampedPos * -CONFIG.tiltEnter;
+        const translateY = clampedPos * -CONFIG.yOffsetEnter;
+        const translateZ = (1 - absPos) * 50 + absPos * CONFIG.depthEnter;
+        const scale = 1 - absPos * 0.03;
+        const opacity = Math.max(0.4, 1 - absPos * 0.5);
+
+        content.style.transform = `perspective(${CONFIG.perspective}px) rotateX(${rotateX}deg) translateY(${translateY}px) translateZ(${translateZ}px) scale(${scale})`;
+        content.style.opacity = opacity;
     });
 
-    // Track section changes
+    // Update active section tracking
     if (activeSection !== state3D.activeSection) {
         state3D.prevActiveSection = state3D.activeSection;
         state3D.activeSection = activeSection;
@@ -213,23 +162,26 @@ function update3DWorld() {
     }
 
     // Update progress bar
-    const maxScroll = document.body.scrollHeight - window.innerHeight;
-    const scrollPercent = maxScroll > 0 ? scrollY / maxScroll : 0;
+    const maxScroll = document.documentElement.scrollHeight - vh;
+    const scrollPercent = maxScroll > 0 ? window.scrollY / maxScroll : 0;
     if (elements.progressBar) {
         elements.progressBar.style.width = `${scrollPercent * 100}%`;
     }
 
     // Update depth indicator
-    updateDepthIndicator(activeSection, numSections);
+    updateDepthIndicator(activeSection, elements.sections.length);
 
     // Update active nav
     updateActiveNav3D(activeSection);
 
     // Update timeline progress
-    updateTimelineProgress3D(scrollY);
+    updateTimelineProgress(window.scrollY);
 
     // Update nav background
-    updateNavBackground(scrollY);
+    updateNavBackground(window.scrollY);
+
+    // Update parallax layers
+    updateParallaxLayers(scrollPercent);
 }
 
 function onSectionChange(from, to) {
@@ -238,35 +190,15 @@ function onSectionChange(from, to) {
 
     const sectionId = toSection.id;
 
-    // Reset triggers when leaving a section
-    if (from >= 0) {
-        const fromSection = elements.sections[from];
-        if (fromSection && fromSection.id === 'experience') {
-            state3D.timelineTriggered = false;
-        }
-        if (fromSection && fromSection.id === 'about') {
-            state3D.statsTriggered = false;
-        }
-    }
-
     // Trigger section-specific animations
     switch (sectionId) {
         case 'experience':
-            if (!state3D.timelineTriggered) {
-                staggerTimelineItems();
-                state3D.timelineTriggered = true;
-            }
+            staggerTimelineItems();
             break;
         case 'about':
-            if (!state3D.statsTriggered) {
-                triggerStatCounters();
-                state3D.statsTriggered = true;
-            }
+            triggerStatCounters();
             break;
     }
-
-    // Trigger reveal animations for the new section
-    triggerRevealAnimationsForSection(toSection);
 }
 
 function updateDepthIndicator(activeSection, totalSections) {
@@ -274,7 +206,7 @@ function updateDepthIndicator(activeSection, totalSections) {
     const labels = document.querySelectorAll('.depth-label');
 
     if (marker && totalSections > 1) {
-        const percent = (activeSection / (totalSections - 1)) * 80; // 80% to leave room
+        const percent = (activeSection / (totalSections - 1)) * 80;
         marker.style.top = `${percent}%`;
     }
 
@@ -289,21 +221,6 @@ function updateActiveNav3D(activeSection) {
     });
 }
 
-function updateTimelineProgress3D(scrollY) {
-    const experienceSection = document.getElementById('experience');
-    if (!experienceSection || !elements.timelineProgress) return;
-
-    const sectionIndex = parseInt(experienceSection.dataset.sectionIndex) || 3;
-    const sectionZ = sectionIndex * state3D.sectionDepth;
-    const relativeScroll = scrollY - sectionZ + window.innerHeight * 0.3;
-    const sectionHeight = state3D.sectionDepth;
-
-    if (relativeScroll > 0 && relativeScroll < sectionHeight + window.innerHeight) {
-        const progress = Math.min((relativeScroll / (sectionHeight + window.innerHeight * 0.5)) * 100, 100);
-        elements.timelineProgress.style.height = `${progress}%`;
-    }
-}
-
 function updateNavBackground(scrollY) {
     if (!elements.nav) return;
     if (scrollY > 100) {
@@ -313,49 +230,24 @@ function updateNavBackground(scrollY) {
     }
 }
 
-function updateParallax3D(scrollY) {
-    // Additional parallax effect based on scroll position
-    // The layers are at different Z depths, so perspective creates natural parallax
-    // But we can enhance it with subtle rotations
-
-    const progress = scrollY / (document.body.scrollHeight - window.innerHeight);
-
+function updateParallaxLayers(scrollPercent) {
     if (elements.layerStars) {
-        elements.layerStars.style.backgroundPosition = `${progress * 100}px ${progress * 50}px`;
+        elements.layerStars.style.transform = `translateX(${-scrollPercent * 100}px)`;
     }
-}
-
-// ===== 3D ANIMATION LOOP =====
-function init3DAnimations() {
-    function loop() {
-        if (state3D.needsUpdate) {
-            update3DWorld();
-            state3D.needsUpdate = false;
-        }
-        requestAnimationFrame(loop);
+    if (elements.layerNebula) {
+        elements.layerNebula.style.transform = `translateX(${-scrollPercent * 50}px)`;
     }
-
-    // Mark for update on scroll
-    window.addEventListener('scroll', () => {
-        state3D.needsUpdate = true;
-    }, { passive: true });
-
-    // Also update immediately on scroll (for responsiveness)
-    window.addEventListener('scroll', () => {
-        update3DWorld();
-    }, { passive: true });
-
-    // Start loop
-    loop();
-
-    // Initial update
-    update3DWorld();
+    if (elements.layerPlanets) {
+        elements.layerPlanets.style.transform = `translateX(${-scrollPercent * 150}px)`;
+    }
 }
 
 // ===== SECTION ANIMATION TRIGGERS =====
 function staggerTimelineItems() {
     const items = document.querySelectorAll('.timeline-item');
     items.forEach((item, i) => {
+        item.classList.remove('visible');
+        void item.offsetWidth; // Force reflow
         setTimeout(() => {
             item.classList.add('visible');
         }, i * 200);
@@ -363,21 +255,11 @@ function staggerTimelineItems() {
 }
 
 function triggerStatCounters() {
-    const stats = document.querySelectorAll('.stat-number');
-    stats.forEach((stat, i) => {
+    elements.statNumbers.forEach((stat, i) => {
+        stat.textContent = '0';
         setTimeout(() => {
             animateCounter(stat);
         }, i * 300);
-    });
-}
-
-function triggerRevealAnimationsForSection(section) {
-    const revealElements = section.querySelectorAll('.section-header, .about-content, .skills-container, .contact-content');
-    revealElements.forEach((el, i) => {
-        setTimeout(() => {
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0)';
-        }, i * 150);
     });
 }
 
@@ -393,7 +275,7 @@ function initScrollModeToggle() {
 }
 
 function updateBodyHeight() {
-    // Handled by 3D system
+    // Natural flow - no need to set body height
 }
 
 // ===== THEME TOGGLE =====
@@ -432,9 +314,8 @@ function initLoader() {
     window.addEventListener('load', () => {
         setTimeout(() => {
             elements.loader.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-            // Ensure 3D is updated after loader
-            state3D.needsUpdate = true;
+            document.body.style.overflowY = 'auto';
+            document.body.style.overflowX = 'hidden';
         }, 1500);
     });
 }
@@ -457,7 +338,6 @@ function createParticle(colors) {
     const delay = Math.random() * 15;
     const duration = Math.random() * 10 + 15;
     const color = colors[Math.floor(Math.random() * colors.length)];
-    const depth = Math.random() * -800 - 100; // Random Z depth for 3D effect
 
     particle.style.cssText = `
         width: ${size}px;
@@ -467,7 +347,6 @@ function createParticle(colors) {
         animation-delay: ${delay}s;
         animation-duration: ${duration}s;
         box-shadow: 0 0 ${size * 2}px ${color};
-        transform: translateZ(${depth}px);
     `;
 
     if (elements.particles) {
@@ -494,29 +373,9 @@ function initTypingEffect() {
 
 // ===== SCROLL EFFECTS =====
 function initScrollEffects() {
-    // 3D world update is now handled by init3DAnimations
-    // This function is kept for compatibility with existing scroll-based features
-
     window.addEventListener('resize', () => {
         updateBodyHeight();
     });
-}
-
-function smoothScrollLoop() {
-    // Replaced by 3D animation loop
-    requestAnimationFrame(smoothScrollLoop);
-}
-
-function updateParallax(scrollPercent) {
-    // Handled by 3D perspective
-}
-
-function updateActiveNav(scrollPercent, sectionCount) {
-    // Replaced by updateActiveNav3D
-}
-
-function updateActiveNavVertical(scrollTop) {
-    // Replaced by 3D system
 }
 
 // ===== NAVIGATION =====
@@ -528,12 +387,9 @@ function initNavigation() {
             const targetSection = document.querySelector(targetId);
 
             if (targetSection) {
-                const sectionIndex = parseInt(targetSection.dataset.sectionIndex) || 0;
-                const targetScroll = sectionIndex * state3D.sectionDepth;
-
-                window.scrollTo({
-                    top: targetScroll,
-                    behavior: 'smooth'
+                targetSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
             }
         });
@@ -542,8 +398,6 @@ function initNavigation() {
 
 // ===== TIMELINE ANIMATIONS =====
 function initTimelineAnimations() {
-    // Timeline items are now triggered by section change
-    // Set initial state
     elements.timelineItems.forEach(item => {
         item.style.opacity = '0';
         item.style.transform = 'translateX(-30px)';
@@ -552,13 +406,21 @@ function initTimelineAnimations() {
 }
 
 function updateTimelineProgress(scrollTop) {
-    // Handled by updateTimelineProgress3D
+    const experienceSection = document.getElementById('experience');
+    if (!experienceSection || !elements.timelineProgress) return;
+
+    const sectionTop = experienceSection.offsetTop;
+    const sectionHeight = experienceSection.offsetHeight;
+    const scrollPosition = scrollTop - sectionTop + window.innerHeight * 0.5;
+
+    if (scrollPosition > 0 && scrollPosition < sectionHeight) {
+        const progress = Math.min((scrollPosition / sectionHeight) * 100, 100);
+        elements.timelineProgress.style.height = `${progress}%`;
+    }
 }
 
 // ===== STAT COUNTERS =====
 function initStatCounters() {
-    // Stats are now triggered by section change
-    // Set initial state
     elements.statNumbers.forEach(stat => {
         stat.textContent = '0';
     });
@@ -593,12 +455,22 @@ function initRevealAnimations() {
         element.style.transition = 'all 0.8s ease';
     });
 
-    // Trigger hero section immediately
+    // Trigger hero section immediately after loader
     const heroSection = document.getElementById('hero');
     if (heroSection) {
         setTimeout(() => {
-            triggerRevealAnimationsForSection(heroSection);
-        }, 2000); // After loader and typing
+            const heroContent = heroSection.querySelector('.section-3d-content');
+            if (heroContent) {
+                heroContent.style.opacity = '1';
+            }
+            const reveals = heroSection.querySelectorAll('.section-header, .about-content, .skills-container, .contact-content');
+            reveals.forEach((el, i) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, i * 150);
+            });
+        }, 2000);
     }
 }
 
@@ -623,12 +495,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-            const sectionIndex = parseInt(target.dataset.sectionIndex) || 0;
-            const targetScroll = sectionIndex * state3D.sectionDepth;
-
-            window.scrollTo({
-                top: targetScroll,
-                behavior: 'smooth'
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
             });
         }
     });
@@ -735,5 +604,5 @@ console.log(`
 `, 'color: #00d4ff; font-family: monospace;');
 
 console.log('%c👋 Hey there, fellow developer! Welcome to the 3D dimension.', 'font-size: 14px;');
-console.log('%c🚀 This portfolio now features a cinematic 3D scroll experience!', 'font-size: 14px;');
+console.log('%c🚀 This portfolio features a stable cinematic 3D scroll experience.', 'font-size: 14px;');
 console.log('%c📧 Feel free to reach out!', 'font-size: 14px;');
