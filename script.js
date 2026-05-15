@@ -12,13 +12,8 @@ const CONFIG = {
     animationDuration: 800,
     name: "Akshant Kumar",
     // 3D Config
-    perspective: 1500,
-    tiltEnter: 10,
-    tiltExit: -10,
-    depthEnter: -100,
-    depthExit: -100,
-    yOffsetEnter: 50,
-    yOffsetExit: -50
+    tiltEnter: 6,
+    yOffsetEnter: 30
 };
 
 // ===== DOM ELEMENTS =====
@@ -70,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initTimelineAnimations();
     initStatCounters();
-    initRevealAnimations();
     initSkillHovers();
     init3D();
 });
@@ -107,6 +101,7 @@ function update3DTransforms() {
     elements.sections.forEach((section, i) => {
         const rect = section.getBoundingClientRect();
         const content = section.querySelector('.section-3d-content');
+        if (!content) return;
 
         // Section center relative to viewport center
         const sectionCenter = rect.top + rect.height / 2;
@@ -118,39 +113,19 @@ function update3DTransforms() {
             activeSection = i;
         }
 
-        if (!content) return;
-
-        // Calculate how much of the section is visible
-        const visibleTop = Math.max(0, -rect.top);
-        const visibleBottom = Math.min(rect.height, vh - rect.top);
-        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-        const visibility = Math.min(1, visibleHeight / Math.min(rect.height, vh));
-
-        if (visibility <= 0.01) {
-            content.style.opacity = '0';
-            return;
-        }
-
-        // Normalized position: -1 (section entering from bottom) to 1 (section exiting to top)
-        // 0 means section is perfectly centered
+        // Normalized position: -1 (entering from bottom) to 1 (exiting to top)
         const travelRange = rect.height / 2 + vh / 2;
         const normalizedPos = (sectionCenter - viewportCenter) / travelRange;
         const clampedPos = Math.max(-1, Math.min(1, normalizedPos));
-
-        // 3D transforms based on position
-        // Entering (clampedPos < 0): tilt back, come from depth
-        // Centered (clampedPos ≈ 0): flat, full opacity
-        // Exiting (clampedPos > 0): tilt forward, recede into depth
         const absPos = Math.abs(clampedPos);
-        const direction = clampedPos < 0 ? -1 : 1;
 
+        // Subtle 3D transforms - perspective is set in CSS
         const rotateX = clampedPos * -CONFIG.tiltEnter;
         const translateY = clampedPos * -CONFIG.yOffsetEnter;
-        const translateZ = (1 - absPos) * 50 + absPos * CONFIG.depthEnter;
-        const scale = 1 - absPos * 0.03;
-        const opacity = Math.max(0.4, 1 - absPos * 0.5);
+        const scale = 1 - absPos * 0.02;
+        const opacity = Math.max(0.5, 1 - absPos * 0.45);
 
-        content.style.transform = `perspective(${CONFIG.perspective}px) rotateX(${rotateX}deg) translateY(${translateY}px) translateZ(${translateZ}px) scale(${scale})`;
+        content.style.transform = `rotateX(${rotateX}deg) translateY(${translateY}px) scale(${scale})`;
         content.style.opacity = opacity;
     });
 
@@ -447,31 +422,8 @@ function animateCounter(element) {
 
 // ===== REVEAL ANIMATIONS =====
 function initRevealAnimations() {
-    const revealElements = document.querySelectorAll('.section-header, .about-content, .skills-container, .contact-content');
-
-    revealElements.forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(30px)';
-        element.style.transition = 'all 0.8s ease';
-    });
-
-    // Trigger hero section immediately after loader
-    const heroSection = document.getElementById('hero');
-    if (heroSection) {
-        setTimeout(() => {
-            const heroContent = heroSection.querySelector('.section-3d-content');
-            if (heroContent) {
-                heroContent.style.opacity = '1';
-            }
-            const reveals = heroSection.querySelectorAll('.section-header, .about-content, .skills-container, .contact-content');
-            reveals.forEach((el, i) => {
-                setTimeout(() => {
-                    el.style.opacity = '1';
-                    el.style.transform = 'translateY(0)';
-                }, i * 150);
-            });
-        }, 2000);
-    }
+    // Elements reveal as their section scrolls into view via the 3D loop
+    // No manual opacity manipulation needed - handled by section-3d-content transforms
 }
 
 // ===== SKILL HOVERS =====

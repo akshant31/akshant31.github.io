@@ -1293,10 +1293,7 @@ ol {
 
 /* Scroll Indicator */
 .scroll-indicator {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
+    margin-top: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1308,11 +1305,11 @@ ol {
 
     0%,
     100% {
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
 
     50% {
-        transform: translateX(-50%) translateY(10px);
+        transform: translateY(10px);
     }
 }
 
@@ -3037,12 +3034,15 @@ ol {
 .section-3d {
     position: relative;
     transform-style: preserve-3d;
+    perspective: 1500px;
+    perspective-origin: 50% 50%;
     will-change: transform;
 }
 
 .section-3d-content {
     transform-style: preserve-3d;
     will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* ===== DEPTH INDICATOR ===== */
