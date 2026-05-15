@@ -767,7 +767,7 @@ ol {
 
 /* ===== PARALLAX LAYERS ===== */
 .parallax-layer {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 200%;
@@ -3037,6 +3037,8 @@ ol {
     perspective: 1500px;
     perspective-origin: 50% 50%;
     will-change: transform;
+    overflow-y: visible;
+    overflow-x: hidden;
 }
 
 .section-3d-content {
