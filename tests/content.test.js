@@ -45,3 +45,13 @@ test('responsive, reduced-motion, focus, and fallback styles exist', () => {
   assert.ok(css.includes('[data-webgl="unavailable"]'))
   assert.ok(css.includes('44px'))
 })
+
+test('scene overlays preserve text contrast without hiding the data universe', () => {
+  assert.ok(css.includes('rgba(11, 13, 18, 0.05) 67%'))
+  assert.ok(css.includes('rgba(11, 13, 18, 0.16) 100%'))
+  assert.ok(css.includes('rgba(11, 13, 18, 0.22) 100%'))
+})
+
+test('mobile scene status cannot obscure scrolling portfolio content', () => {
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.scene-status \{\n    display: none;\n  \}/)
+})

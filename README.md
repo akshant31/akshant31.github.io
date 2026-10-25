@@ -36,6 +36,16 @@ npm run build
 
 `npm run build` creates the Edit3D service in `dist/`, including static public assets in `dist/public/`.
 
+### Verification on this branch
+
+- All 22 Node regression tests pass, covering deterministic morphs, content, responsive behavior, camera composition, and editor-owned material replacement.
+- The Edit3D compile check and production build pass. The build retains non-fatal SDK decoder-asset and large-chunk warnings.
+- All five chapters were visually reviewed at 1440 × 900 and 390 × 844 with no horizontal overflow or runtime errors.
+- Real-browser checks cover section navigation, keyboard shortcuts, scene emphasis, pointer interaction, contact links, reduced motion, and the no-WebGL fallback.
+- Standalone editor checks cover scene lint, framing, parameter edits, undo/redo, save/reload persistence, and Raw/Lattice Play morphs. Native desktop toolbar and IPC integration were not exercised.
+
+`npm audit` reports a high-severity advisory chain in the editor CLI's pinned Vite 8.2.2 development dependency. npm reports no available fix, so this branch does not force an unsupported dependency rewrite.
+
 ## Interaction
 
 - Scroll or use the section navigation to morph the 3D data universe.

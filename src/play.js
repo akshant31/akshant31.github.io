@@ -127,7 +127,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
 
   function update(dt) {
     const safeDt = Math.max(0, Math.min(0.1, Number.isFinite(dt) ? dt : 0))
-    time += safeDt * settings.motionSpeed
+    if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
     sampleMorph(targets, getMorphFrame(progress), positions.array)
     const flow = reducedMotion.matches ? 0 : settings.flowIntensity
@@ -188,7 +188,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     coreRings.rotation.z = time * -0.06
     camera.position.x = pointer.active && !reducedMotion.matches ? pointer.x * 0.28 : 0
     camera.position.y = 0.2 + (pointer.active && !reducedMotion.matches ? pointer.y * 0.18 : 0)
-    camera.lookAt(universe.position.x * 0.88, universe.position.y * 0.3, 0)
+    camera.lookAt(0, 0, 0)
   }
 
   update(0)

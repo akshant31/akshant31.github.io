@@ -40,11 +40,11 @@ export function createScene({ asset }) {
   scene.background = new THREE.Color('#0B0D12')
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
   camera.position.set(0, 0.2, 18)
-  camera.lookAt(2.2, 0, 0)
+  camera.lookAt(0, 0, 0)
   camera.name = 'Main camera · Data Universe'
 
   const settings = {
-    particleSize: 0.055,
+    particleSize: 0.1,
     motionSpeed: 1,
     flowIntensity: 0.7,
     cyan: '#00D4FF',
@@ -64,7 +64,8 @@ export function createScene({ asset }) {
     sizeAttenuation: true,
     map: createParticleSprite(),
     transparent: true,
-    opacity: 0.88,
+    opacity: 0.96,
+    blending: THREE.AdditiveBlending,
     alphaTest: 0.015,
     depthWrite: false,
     vertexColors: true,
@@ -89,14 +90,14 @@ export function createScene({ asset }) {
     name: 'Data Universe · Cyan Core Ring',
     color: settings.cyan,
     transparent: true,
-    opacity: 0.18,
+    opacity: 0.38,
     depthWrite: false,
   })
   const violetRingMaterial = new THREE.MeshBasicMaterial({
     name: 'Data Universe · Violet Core Ring',
     color: settings.violet,
     transparent: true,
-    opacity: 0.14,
+    opacity: 0.32,
     depthWrite: false,
   })
   const coreRings = new THREE.Group()
@@ -129,20 +130,21 @@ export function createScene({ asset }) {
     violet: { label: 'Violet accent', type: 'color' },
   }, { name: 'Data Palette' })
 
-  const baseColor = new THREE.Color('#758398')
+  const baseColor = new THREE.Color('#A9BACB')
   const cyanColor = new THREE.Color()
   const violetColor = new THREE.Color()
   function applyParams() {
     particleMaterial.size = settings.particleSize
     networkMaterial.opacity = 0.06 + settings.flowIntensity * 0.1
-    cyanRingMaterial.color.set(settings.cyan)
-    violetRingMaterial.color.set(settings.violet)
+    for (const [index, ring] of coreRings.children.entries()) {
+      ring.material.color.set(index === 1 ? settings.violet : settings.cyan)
+    }
     cyanColor.set(settings.cyan)
     violetColor.set(settings.violet)
     const colors = particleGeometry.attributes.color
     for (let index = 0; index < PARTICLE_COUNT; index += 1) {
       const band = index % 11
-      const color = band < 7 ? baseColor : band < 9 ? cyanColor : violetColor
+      const color = band < 4 ? baseColor : band < 8 ? cyanColor : violetColor
       colors.setXYZ(index, color.r, color.g, color.b)
     }
     colors.needsUpdate = true

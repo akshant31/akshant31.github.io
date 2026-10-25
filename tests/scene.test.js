@@ -60,3 +60,20 @@ test('parameter subscriptions update particle size and accent colors', () => {
   result.dispose()
   assert.equal(asset.listenerCount(), 0)
 })
+
+test('palette updates follow editor-owned ring material replacements', () => {
+  const asset = makeAsset()
+  const result = createScene({ asset })
+  const cyanRing = result.scene.getObjectByName('Core Ring 1')
+  const violetRing = result.scene.getObjectByName('Core Ring 2')
+  cyanRing.material = cyanRing.material.clone()
+  violetRing.material = violetRing.material.clone()
+
+  asset.params.get('dataPalette').settings.cyan = '#ff006e'
+  asset.params.get('dataPalette').settings.violet = '#7b2cbf'
+  asset.change()
+
+  assert.equal(cyanRing.material.color.getHexString(), 'ff006e')
+  assert.equal(violetRing.material.color.getHexString(), '7b2cbf')
+  result.dispose()
+})

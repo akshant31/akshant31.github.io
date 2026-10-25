@@ -41,7 +41,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(90deg, rgba(11, 13, 18, 0.98) 0%, rgba(11, 13, 18, 0.87) 32%, rgba(11, 13, 18, 0.2) 67%, rgba(11, 13, 18, 0.44) 100%);
+  background: linear-gradient(90deg, rgba(11, 13, 18, 0.98) 0%, rgba(11, 13, 18, 0.87) 32%, rgba(11, 13, 18, 0.05) 67%, rgba(11, 13, 18, 0.16) 100%);
   content: '';
   pointer-events: none;
 }
@@ -113,7 +113,7 @@ svg {
   position: fixed;
   inset: 0;
   z-index: 1;
-  background: radial-gradient(circle at 72% 48%, transparent 0%, rgba(11, 13, 18, 0.08) 42%, rgba(11, 13, 18, 0.38) 100%);
+  background: radial-gradient(circle at 72% 48%, transparent 0%, rgba(11, 13, 18, 0.04) 42%, rgba(11, 13, 18, 0.22) 100%);
   pointer-events: none;
 }
 
@@ -937,9 +937,7 @@ html[data-webgl="unavailable"] body {
   }
 
   .scene-status {
-    right: 20px;
-    bottom: 14px;
-    font-size: 7px;
+    display: none;
   }
 
   .section {
