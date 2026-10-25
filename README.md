@@ -1,77 +1,85 @@
-# Interactive Data Engineer Portfolio
+# Akshant Kumar — Particle Data Universe
 
-A visually stunning, animated portfolio website with a cyberpunk/tech theme featuring parallax scrolling, floating particles, and interactive elements.
+A 3D data-engineering portfolio built from the content of the original [Akshant Kumar portfolio](https://akshant31.github.io). One persistent Three.js particle subject transforms through five chapters: raw records, an orchestrated pipeline, a skills constellation, an experience helix, and a structured output lattice.
 
-## 🚀 Live Demo
+The design uses the supplied particle reference as interaction inspiration without copying its portrait, assets, text, or layout.
 
-**[View Portfolio](https://akshant31.github.io)**
+## Branches
 
-## ✨ Features
+- `master`: existing production portfolio, unchanged by this work.
+- `feature/3d-data-portfolio`: this 3D redesign.
 
-### Navigation
-- Vertical navigation bar on right side
-- Icon-based navigation (🏠👤⚡💼📧)
-- Hover tooltips with smooth animations
-- Gradient "AK" logo with glow effect
+No merge or production deployment is configured by this branch.
 
-### Sections
-| Section | Features |
-|---------|----------|
-| **Hero** | Animated astronaut, typing effect, floating data nodes |
-| **About** | Terminal-style code display, stat counters, rotating avatar rings |
-| **Skills** | Orbital visualization, category cards with skill tags |
-| **Experience** | Interactive timeline with 4 companies |
-| **Contact** | Control panel design, signal wave animations |
+## Run locally
 
-### Animations
-- ✨ Shimmer sweep on card hover
-- 📦 Card lift with glow shadow
-- 💫 Skill tags scale + glow
-- 🌊 Button ripple effect
-- 🔄 Rotating avatar rings
-- 📊 Stat numbers glow on hover
-- 🎯 Staggered fade-in for hero text
-- ⭐ Floating particles background
+Requires Node.js 22.12 or newer.
 
-## 🛠️ Tech Stack
-
-- **HTML5** - Semantic structure
-- **CSS3** - Animations, gradients, glassmorphism
-- **JavaScript** - Scroll effects, typing animation, particles
-- **Google Fonts** - Orbitron, Fira Code, Inter
-
-## 📁 File Structure
-
-```
-├── index.html    # Main HTML structure
-├── style.css     # All styling and animations
-├── script.js     # Interactive functionality
-└── README.md     # This file
+```bash
+npm install
+npm run dev
 ```
 
-## 🎨 Color Palette
+The development command forwards standard host and port arguments:
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Deep Space Blue | `#0a0a1a` | Background |
-| Electric Cyan | `#00d4ff` | Primary accent |
-| Neon Purple | `#9d4edd` | Secondary accent |
-| Pink | `#ff006e` | Highlights |
-| Green | `#00ff88` | Success states |
+```bash
+npm run dev -- --host localhost --port 5173
+```
 
-## 📱 Responsive Design
+## Verify
 
-- Desktop: Full experience with all animations
-- Tablet: Optimized layout, vertical nav compact
-- Mobile: Streamlined navigation, touch-friendly
+```bash
+npm test
+npm run check
+npm run build
+```
 
-## 👨‍💻 Author
+`npm run build` creates the Edit3D service in `dist/`, including static public assets in `dist/public/`.
 
-**Akshant Kumar** - Data Engineer
+## Interaction
 
-- Email: akst31@yahoo.com
+- Scroll or use the section navigation to morph the 3D data universe.
+- Move the pointer over the scene for a subtle particle-dissolve effect.
+- Select skill groups and experience entries to change scene emphasis.
+- In embedded Edit3D Play, use the five shape buttons or keys `1`–`5`.
+- Semantic HTML, keyboard focus, responsive layouts, reduced-motion behavior, and a no-WebGL fallback keep the portfolio readable.
+
+## Content chapters
+
+| Section | 3D state | Portfolio content |
+| --- | --- | --- |
+| Home | Raw records | Name, role, 7+ years summary, primary actions |
+| About | Pipeline | `about_me.py`, professional summary, existing counters |
+| Skills | Constellation | Languages, databases, cloud, and data tools |
+| Experience | Timeline helix | Ametris, Biofourmis, Tribes.AI, Infosys |
+| Contact | Structured lattice | Email and GitHub |
+
+All professional facts come from the existing portfolio. No impact metrics, project claims, certifications, or social links have been invented.
+
+## Project structure
+
+```text
+├── index.html              # Semantic portfolio content
+├── src/
+│   ├── main.js             # Normal and embedded runtime entry
+│   ├── scene.js            # Edit3D scene and editable parameters
+│   ├── play.js             # Particle motion and interaction
+│   ├── shapes.js           # Deterministic morph targets
+│   ├── morph.js            # Pure morph math
+│   ├── site.js             # Navigation and UI emphasis
+│   ├── content.js          # Section metadata
+│   ├── styles.css          # Responsive visual system
+│   └── review.js           # Actual runtime review evidence
+├── tests/                  # Node test runner contracts
+├── docs/                   # Approved design and implementation plan
+└── .edit3d/                # Installed plugin launcher configuration
+```
+
+The project uses the Edit3D plugin SDK and Three.js. When moving the source to another machine, install the editor plugin and run its `prepare` command before `npm run dev`.
+
+## Contact
+
+**Akshant Kumar** — Data Engineer
+
+- Email: [akst31@yahoo.com](mailto:akst31@yahoo.com)
 - GitHub: [@akshant31](https://github.com/akshant31)
-
----
-
-*Built with 💜 and lots of CSS animations*
