@@ -1,4 +1,5 @@
 import { createBoy } from './subjects/boy.js'
+import { createIndia } from './subjects/india.js'
 import { seededRandom, sphericalPoint, writePoint } from './subjects/shared.js'
 export { seededRandom } from './subjects/shared.js'
 
@@ -20,29 +21,6 @@ function buildRawCloud(count, random) {
       const radius = 2.8 + Math.pow(random(), 0.65) * 2.7
       const [x, y, z] = sphericalPoint(random, radius)
       writePoint(target, index, x, y * 0.8, z)
-    }
-  }
-  return target
-}
-
-function buildPipeline(count, random) {
-  const target = new Float32Array(count * 3)
-  const centers = [-4.1, 0, 4.1]
-  for (let index = 0; index < count; index += 1) {
-    if (index < count * 0.62) {
-      const stage = index % 3
-      const radius = stage === 1 ? 1.45 : 1.15
-      const [x, y, z] = sphericalPoint(random, Math.pow(random(), 0.35) * radius)
-      writePoint(target, index, centers[stage] + x, y, z)
-    } else {
-      const t = random()
-      const lane = (index % 5) * 0.22
-      const direction = index % 2 === 0 ? t : 1 - t
-      const x = -4.2 + direction * 8.4
-      const envelope = Math.sin(t * Math.PI)
-      const y = Math.sin(t * Math.PI * 4 + lane) * 0.62 * envelope + (random() - 0.5) * 0.14
-      const z = Math.cos(t * Math.PI * 4 + lane) * 0.62 * envelope + (random() - 0.5) * 0.14
-      writePoint(target, index, x, y, z)
     }
   }
   return target
@@ -121,15 +99,16 @@ export function createSubjectTargets(count = PARTICLE_COUNT) {
   const random = seededRandom(31031)
   const phaseRandom = seededRandom(91031)
   const boy = createBoy(count, random)
+  const india = createIndia(count, random)
   return {
     targets: [
       boy.positions,
-      buildPipeline(count, random),
+      india.positions,
       buildConstellation(count, random),
       buildLattice(count, random),
     ],
     boyRegions: boy.regions,
-    indiaOutlineCount: 0,
+    indiaOutlineCount: india.outlineCount,
     phases: Float32Array.from({ length: count }, phaseRandom),
   }
 }
