@@ -1,10 +1,11 @@
 import { SECTIONS } from './content.js'
 import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from './morph.js'
+import { applyBoyMotion } from './boy-motion.js'
 
 const CONTROL_LABELS = ['Boy', 'India', 'Skills', 'Portal']
 
 export function playPortfolio({ canvas, container, signal }, objects, settings) {
-  const { universe, particles, dust, camera, targets } = objects
+  const { universe, particles, dust, camera, targets, boyRegions, phases } = objects
   const doc = container.ownerDocument || null
   const browserWindow = doc?.defaultView || null
   const embedded = Boolean(doc?.body.classList.contains('embedded-mode'))
@@ -16,6 +17,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   let progress = 0
   let targetProgress = 0
   let time = 0
+  let resumeWithZeroDelta = false
   let emphasisKind = null
   let emphasisIndex = 0
   let controls
@@ -25,7 +27,8 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   function measure() {
     if (!browserWindow || sections.length !== SECTIONS.length) return
     offsets = sections.map((section) => section.offsetTop)
-    targetProgress = progressFromOffsets(offsets, browserWindow.scrollY)
+    const measured = progressFromOffsets(offsets, browserWindow.scrollY)
+    targetProgress = reducedMotion.matches ? Math.round(measured) : measured
   }
 
   function updateControls() {
@@ -34,7 +37,8 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   }
 
   function setProgress(value) {
-    targetProgress = Math.max(0, Math.min(3, Number.isFinite(value) ? value : 0))
+    const next = Math.max(0, Math.min(3, Number.isFinite(value) ? value : 0))
+    targetProgress = reducedMotion.matches ? Math.round(next) : next
     if (reducedMotion.matches) progress = targetProgress
     updateControls()
   }
@@ -55,7 +59,9 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
 
   function onKeydown(event) {
     if (event.metaKey || event.ctrlKey || event.altKey) return
-    if (/^[1-5]$/.test(event.key)) {
+    const target = event.target
+    if (target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName)) return
+    if (/^[1-4]$/.test(event.key)) {
       event.preventDefault()
       goTo(Number(event.key) - 1)
     } else if (['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'].includes(event.key)) {
@@ -112,6 +118,10 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     browserWindow.addEventListener('pointerleave', onPointerLeave, { signal })
     browserWindow.addEventListener('portfolio:section', onSection, { signal })
     browserWindow.addEventListener('portfolio:emphasis', onEmphasis, { signal })
+    doc?.addEventListener?.('visibilitychange', () => {
+      pointer.active = false
+      resumeWithZeroDelta = true
+    }, { signal })
     reducedMotion.addEventListener?.('change', (event) => {
       if (event.matches) {
         pointer.active = false
@@ -124,10 +134,21 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   }
 
   function update(dt) {
-    const safeDt = Math.max(0, Math.min(0.1, Number.isFinite(dt) ? dt : 0))
+    if (doc?.hidden) {
+      resumeWithZeroDelta = true
+      return
+    }
+    let safeDt = Math.max(0, Math.min(0.1, Number.isFinite(dt) ? dt : 0))
+    if (resumeWithZeroDelta) {
+      safeDt = 0
+      resumeWithZeroDelta = false
+    }
     if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
-    sampleMorph(targets, getMorphFrame(progress), positions.array)
+    sampleMorph(targets, getMorphFrame(progress), positions.array, phases)
+    if (!reducedMotion.matches && progress < 1) {
+      applyBoyMotion(positions.array, boyRegions, time, pointer, Math.max(0, 1 - progress))
+    }
     const boyWeight = Math.max(0, 1 - progress)
     const mapWeight = Math.max(0, 1 - Math.abs(progress - 1))
     const skillWeight = Math.max(0, 1 - Math.abs(progress - 2))

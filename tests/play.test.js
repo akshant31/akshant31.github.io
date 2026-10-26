@@ -77,3 +77,50 @@ test('Play morphs the real particle buffer toward the selected chapter', async (
   play.dispose()
   scene.dispose()
 })
+
+test('curved morphs are bounded and exact at both endpoints', () => {
+  const targets = [new Float32Array([0, 0, 0, 1, 1, 1]), new Float32Array([2, 4, 6, 3, 5, 7])]
+  const phases = new Float32Array([0, 0.5])
+  const output = new Float32Array(6)
+  sampleMorph(targets, { from: 0, to: 1, mix: 0 }, output, phases)
+  assert.deepEqual(output, targets[0])
+  sampleMorph(targets, { from: 0, to: 1, mix: 1 }, output, phases)
+  assert.deepEqual(output, targets[1])
+  sampleMorph(targets, { from: 0, to: 1, mix: 0.5 }, output, phases)
+  assert.ok(output.every(Number.isFinite))
+  assert.notDeepEqual([...output], [1, 2, 3, 2, 3, 4])
+  assert.ok([...output].every((value) => Math.abs(value) <= 8))
+})
+
+test('hidden playback writes nothing and resumes with zero motion delta', async () => {
+  const reducedMotion = { matches: false, addEventListener() {} }
+  const browserWindow = { matchMedia: () => reducedMotion, addEventListener() {}, innerWidth: 1200, scrollY: 0 }
+  const doc = {
+    hidden: false,
+    body: { classList: { contains: () => true } },
+    defaultView: browserWindow,
+    createElement: () => ({ setAttribute() {}, addEventListener() {}, append() {}, remove() {} }),
+    addEventListener() {},
+  }
+  const context = {
+    canvas: { addEventListener() {}, focus() {} },
+    container: { append() {}, replaceChildren() {}, ownerDocument: doc },
+    signal: { aborted: false, addEventListener() {} },
+  }
+  const result = createScene({ asset: makeAsset() })
+  const play = await result.play(context)
+  const particles = result.scene.getObjectByName('Particle Field')
+  const dust = result.scene.getObjectByName('Ambient Dust')
+  play.update(0)
+  const version = particles.geometry.attributes.position.version
+  doc.hidden = true
+  play.update(1)
+  assert.equal(particles.geometry.attributes.position.version, version)
+  doc.hidden = false
+  play.update(1)
+  assert.equal(dust.rotation.y, 0)
+  play.update(1)
+  assert.ok(dust.rotation.y > 0)
+  play.dispose()
+  result.dispose()
+})

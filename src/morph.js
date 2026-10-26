@@ -24,11 +24,24 @@ export function progressFromOffsets(offsets, scrollY) {
   return offsets.length - 1
 }
 
-export function sampleMorph(targets, frame, output) {
+export function sampleMorph(targets, frame, output, phases = null) {
   const from = targets[frame.from]
   const to = targets[frame.to]
-  for (let index = 0; index < output.length; index += 1) {
-    output[index] = from[index] + (to[index] - from[index]) * frame.mix
+  const mix = frame.mix
+  const arc = mix > 0 && mix < 1 ? Math.sin(mix * Math.PI) : 0
+  for (let point = 0; point < output.length / 3; point += 1) {
+    const offset = point * 3
+    output[offset] = from[offset] + (to[offset] - from[offset]) * mix
+    output[offset + 1] = from[offset + 1] + (to[offset + 1] - from[offset + 1]) * mix
+    output[offset + 2] = from[offset + 2] + (to[offset + 2] - from[offset + 2]) * mix
+    if (phases && arc > 0) {
+      const phase = phases[point] * Math.PI * 2
+      const angle = mix * Math.PI * 2 + phase
+      const radius = 0.35 + phases[point] * 0.65
+      output[offset] += Math.cos(angle) * arc * 0.55 * radius
+      output[offset + 1] += Math.sin(phase) * arc * 0.28
+      output[offset + 2] += Math.sin(angle) * arc * 0.95 * radius
+    }
   }
   return output
 }
