@@ -124,3 +124,49 @@ test('hidden playback writes nothing and resumes with zero motion delta', async 
   play.dispose()
   result.dispose()
 })
+
+test('live reduced-motion activation snaps fractional morphs to a static chapter target', async () => {
+  let onReducedMotionChange
+  const reducedMotion = {
+    matches: false,
+    addEventListener(type, listener) {
+      if (type === 'change') onReducedMotionChange = listener
+    },
+  }
+  const browserWindow = { matchMedia: () => reducedMotion, addEventListener() {}, innerWidth: 1200, scrollY: 0 }
+  const doc = {
+    hidden: false,
+    body: { classList: { contains: () => true } },
+    defaultView: browserWindow,
+    createElement: () => ({ setAttribute() {}, addEventListener() {}, append() {}, remove() {} }),
+    addEventListener() {},
+  }
+  const context = {
+    canvas: { addEventListener() {}, focus() {} },
+    container: { append() {}, replaceChildren() {}, ownerDocument: doc },
+    signal: { aborted: false, addEventListener() {} },
+  }
+  const result = createScene({ asset: makeAsset() })
+  const play = await result.play(context)
+  try {
+    const particles = result.scene.getObjectByName('Particle Field')
+    const current = particles.geometry.attributes.position.array
+    const targets = createShapeTargets(PARTICLE_COUNT)
+    assert.equal(typeof onReducedMotionChange, 'function')
+    play.setProgress(0.5)
+    play.update(0.1)
+    assert.ok(current.some((value, index) => value !== targets[1][index]))
+
+    reducedMotion.matches = true
+    onReducedMotionChange({ matches: true })
+    play.update(1)
+    assert.ok(current.every((value, index) => value === targets[1][index]), 'reduced motion must snap to the exact chapter target')
+
+    const snapped = new Float32Array(current)
+    play.update(1)
+    assert.deepEqual(current, snapped)
+  } finally {
+    play.dispose()
+    result.dispose()
+  }
+})

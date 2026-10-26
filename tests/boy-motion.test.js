@@ -40,4 +40,11 @@ test('raised arm moves more than planted legs', () => {
   const rightLeg = displacement(output, positions, regions, BOY_REGION.RIGHT_LEG)
   assert.ok(arm > leftLeg * 2, `arm ${arm}, left leg ${leftLeg}`)
   assert.ok(arm > rightLeg * 2, `arm ${arm}, right leg ${rightLeg}`)
+  for (let index = 0; index < regions.length; index += 1) {
+    if (regions[index] !== BOY_REGION.LEFT_LEG && regions[index] !== BOY_REGION.RIGHT_LEG) continue
+    const offset = index * 3
+    assert.equal(output[offset], positions[offset])
+    assert.equal(output[offset + 1], positions[offset + 1])
+    assert.equal(output[offset + 2], positions[offset + 2])
+  }
 })

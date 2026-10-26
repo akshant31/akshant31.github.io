@@ -125,7 +125,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     reducedMotion.addEventListener?.('change', (event) => {
       if (event.matches) {
         pointer.active = false
-        progress = targetProgress
+        setProgress(targetProgress)
       }
     }, { signal })
     canvas.addEventListener('pointerdown', () => canvas.focus(), { signal })
@@ -146,10 +146,10 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
     sampleMorph(targets, getMorphFrame(progress), positions.array, phases)
-    if (!reducedMotion.matches && progress < 1) {
-      applyBoyMotion(positions.array, boyRegions, time, pointer, Math.max(0, 1 - progress))
-    }
     const boyWeight = Math.max(0, 1 - progress)
+    if (!reducedMotion.matches && progress < 1) {
+      applyBoyMotion(positions.array, boyRegions, time, pointer, boyWeight)
+    }
     const mapWeight = Math.max(0, 1 - Math.abs(progress - 1))
     const skillWeight = Math.max(0, 1 - Math.abs(progress - 2))
     const skillAngle = emphasisKind === 'skill' ? skillWeight * 0.35 : 0
