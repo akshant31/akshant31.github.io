@@ -24,7 +24,12 @@ export default {
     {
       name: 'Automated content and visual regression checks',
       status: 'passed',
-      evidence: 'npm test passed 22 of 22 tests, including deterministic morphs, camera framing, particle contrast, mobile overlap prevention, reduced-motion behavior, and editor-owned material replacement.',
+      evidence: 'npm test passed 23 of 23 tests, including deterministic morphs, camera framing, particle contrast, mobile overlap prevention, reduced-motion behavior, editor-owned material replacement, and normal website preview routing.',
+    },
+    {
+      name: 'Normal website preview content and scene',
+      status: 'passed',
+      evidence: '2026-10-26 actual Work browser runtime through the non-scene preview launcher: embedded mode was off, the header and all five semantic sections were visible, Skills navigation worked, and the normal preview mounted 12,000 particles with WebGL ready.',
     },
     {
       name: 'Standalone editor parameters, history, and persistence',

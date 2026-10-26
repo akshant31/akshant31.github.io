@@ -26,6 +26,10 @@ The development command forwards standard host and port arguments:
 npm run dev -- --host localhost --port 5173
 ```
 
+### Full website preview in Kimi Work
+
+Use `preview/` as the preview project root. Its package intentionally has no Edit3D scene marker, so the preview opens the complete semantic website rather than the embedded scene-only presentation. The launcher forwards host and port arguments to the root development command. The root project remains available for editable-scene previews.
+
 ## Verify
 
 ```bash
@@ -38,7 +42,7 @@ npm run build
 
 ### Verification on this branch
 
-- All 22 Node regression tests pass, covering deterministic morphs, content, responsive behavior, camera composition, and editor-owned material replacement.
+- All 23 Node regression tests pass, covering deterministic morphs, content, responsive behavior, camera composition, editor-owned material replacement, and normal website preview routing.
 - The Edit3D compile check and production build pass. The build retains non-fatal SDK decoder-asset and large-chunk warnings.
 - All five chapters were visually reviewed at 1440 × 900 and 390 × 844 with no horizontal overflow or runtime errors.
 - Real-browser checks cover section navigation, keyboard shortcuts, scene emphasis, pointer interaction, contact links, reduced motion, and the no-WebGL fallback.
