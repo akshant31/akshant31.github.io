@@ -6,6 +6,8 @@ export function initSite({ onSection, onEmphasis } = {}) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const sections = SECTIONS.map(({ id }) => document.getElementById(id))
   const navLinks = [...document.querySelectorAll('[data-nav-link]')]
+  const skillPanels = [...document.querySelectorAll('[data-skill-tools]')]
+  const progressFill = document.getElementById('chapter-progress-fill')
   const visibility = SECTIONS.map(() => 0)
   let activeIndex = -1
 
@@ -15,11 +17,16 @@ export function initSite({ onSection, onEmphasis } = {}) {
     window.dispatchEvent(new CustomEvent('portfolio:section', { detail }))
   }
 
+  function setSkillPanel(index) {
+    for (const panel of skillPanels) panel.hidden = Number(panel.dataset.skillTools) !== index
+  }
+
   function setActive(index, force = false) {
     if (!Number.isInteger(index) || index < 0 || index >= SECTIONS.length) return
     if (index === activeIndex && !force) return
     activeIndex = index
     document.body.dataset.section = SECTIONS[index].id
+    if (progressFill) progressFill.style.transform = `scaleX(${(index + 1) / SECTIONS.length})`
     for (const link of navLinks) {
       if (Number(link.dataset.navLink) === index) link.setAttribute('aria-current', 'page')
       else link.removeAttribute('aria-current')
@@ -64,6 +71,7 @@ export function initSite({ onSection, onEmphasis } = {}) {
           candidate.setAttribute('aria-pressed', String(candidate === item))
           if (kind === 'experience') candidate.closest('.experience-item')?.classList.toggle('is-active', candidate === item)
         }
+        if (kind === 'skill') setSkillPanel(index)
         const detail = { kind, index }
         onEmphasis?.(detail)
         window.dispatchEvent(new CustomEvent('portfolio:emphasis', { detail }))
@@ -73,6 +81,8 @@ export function initSite({ onSection, onEmphasis } = {}) {
 
   bindEmphasis('[data-skill-group]', 'skill')
   bindEmphasis('.experience-select', 'experience')
+  setSkillPanel(0)
+  document.documentElement.classList.add('js')
   const year = document.getElementById('current-year')
   if (year) year.textContent = String(new Date().getFullYear())
   setActive(0)
@@ -82,6 +92,8 @@ export function initSite({ onSection, onEmphasis } = {}) {
     dispose() {
       observer.disconnect()
       controller.abort()
+      document.documentElement.classList.remove('js')
+      for (const panel of skillPanels) panel.hidden = false
     },
   }
 }

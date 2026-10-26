@@ -42,11 +42,30 @@ test('responsive, reduced-motion, focus, and fallback styles exist', () => {
 })
 
 test('scene overlays preserve text contrast without hiding the data universe', () => {
-  assert.ok(css.includes('rgba(11, 13, 18, 0.05) 67%'))
-  assert.ok(css.includes('rgba(11, 13, 18, 0.16) 100%'))
-  assert.ok(css.includes('rgba(11, 13, 18, 0.22) 100%'))
+  assert.ok(css.includes('rgba(5, 7, 11, 0.82)'))
+  assert.ok(css.includes('rgba(5, 7, 11, 0.65)'))
 })
 
 test('mobile scene status cannot obscure scrolling portfolio content', () => {
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.scene-status \{\n    display: none;\n  \}/)
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.scene-status\s*\{[^}]*display:\s*none;/)
+})
+
+test('skill panels are readable before JavaScript and enhanced after initialization', () => {
+  const site = readFileSync(new URL('../src/site.js', import.meta.url), 'utf8')
+  assert.ok(!/<ul class="skill-tools"[^>]*hidden/.test(html))
+  for (let index = 0; index < 4; index += 1) {
+    assert.ok(html.includes(`aria-controls="skill-tools-${index}"`))
+    assert.ok(html.includes(`data-skill-tools="${index}"`))
+  }
+  assert.ok(site.includes('panel.hidden = Number(panel.dataset.skillTools) !== index'))
+  assert.ok(site.includes("document.documentElement.classList.add('js')"))
+})
+
+test('immersive layout uses full viewport scenes and centered-edge composition', () => {
+  assert.ok(css.includes('min-height: 100svh'))
+  assert.ok(css.includes('left: 50%'))
+  assert.ok(css.includes('grid-template-columns: 1fr'))
+  assert.ok(css.includes('.experience-list'))
+  assert.ok(css.includes('.chapter-progress'))
+  assert.ok(!css.includes('min-height: 175svh'))
 })
