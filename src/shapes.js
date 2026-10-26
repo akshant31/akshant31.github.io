@@ -1,27 +1,9 @@
+import { createBoy } from './subjects/boy.js'
+import { seededRandom, sphericalPoint, writePoint } from './subjects/shared.js'
+export { seededRandom } from './subjects/shared.js'
+
 export const SECTION_IDS = ['hero', 'experience', 'skills', 'contact']
 export const PARTICLE_COUNT = 20000
-
-export function seededRandom(seed) {
-  let state = seed >>> 0
-  return () => {
-    state = (state * 1664525 + 1013904223) >>> 0
-    return state / 4294967296
-  }
-}
-
-function writePoint(target, index, x, y, z) {
-  const offset = index * 3
-  target[offset] = x
-  target[offset + 1] = y
-  target[offset + 2] = z
-}
-
-function sphericalPoint(random, radius) {
-  const theta = random() * Math.PI * 2
-  const cosPhi = random() * 2 - 1
-  const sinPhi = Math.sqrt(1 - cosPhi * cosPhi)
-  return [Math.cos(theta) * sinPhi * radius, cosPhi * radius, Math.sin(theta) * sinPhi * radius]
-}
 
 function buildRawCloud(count, random) {
   const target = new Float32Array(count * 3)
@@ -134,13 +116,24 @@ function buildLattice(count, random) {
   return target
 }
 
-export function createShapeTargets(count = PARTICLE_COUNT) {
+export function createSubjectTargets(count = PARTICLE_COUNT) {
   if (!Number.isInteger(count) || count < 1) throw new Error('INVALID_PARTICLE_COUNT')
   const random = seededRandom(31031)
-  return [
-    buildRawCloud(count, random),
-    buildPipeline(count, random),
-    buildConstellation(count, random),
-    buildLattice(count, random),
-  ]
+  const phaseRandom = seededRandom(91031)
+  const boy = createBoy(count, random)
+  return {
+    targets: [
+      boy.positions,
+      buildPipeline(count, random),
+      buildConstellation(count, random),
+      buildLattice(count, random),
+    ],
+    boyRegions: boy.regions,
+    indiaOutlineCount: 0,
+    phases: Float32Array.from({ length: count }, phaseRandom),
+  }
+}
+
+export function createShapeTargets(count = PARTICLE_COUNT) {
+  return createSubjectTargets(count).targets
 }
