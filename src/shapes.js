@@ -1,98 +1,12 @@
 import { createBoy } from './subjects/boy.js'
 import { createIndia } from './subjects/india.js'
-import { seededRandom, sphericalPoint, writePoint } from './subjects/shared.js'
+import { createConstellation } from './subjects/constellation.js'
+import { createPortal } from './subjects/portal.js'
+import { seededRandom } from './subjects/shared.js'
 export { seededRandom } from './subjects/shared.js'
 
 export const SECTION_IDS = ['hero', 'experience', 'skills', 'contact']
 export const PARTICLE_COUNT = 20000
-
-function buildRawCloud(count, random) {
-  const target = new Float32Array(count * 3)
-  for (let index = 0; index < count; index += 1) {
-    if (index < count * 0.42) {
-      const angle = random() * Math.PI * 2
-      const radius = 1.75 + random() * 0.35
-      const zone = random()
-      const y = zone < 0.45
-        ? [-1.55, 0, 1.55][Math.floor(random() * 3)] + (random() - 0.5) * 0.12
-        : (random() - 0.5) * 3.3
-      writePoint(target, index, Math.cos(angle) * radius, y, Math.sin(angle) * radius)
-    } else {
-      const radius = 2.8 + Math.pow(random(), 0.65) * 2.7
-      const [x, y, z] = sphericalPoint(random, radius)
-      writePoint(target, index, x, y * 0.8, z)
-    }
-  }
-  return target
-}
-
-function buildConstellation(count, random) {
-  const target = new Float32Array(count * 3)
-  const radii = [2.1, 3.05, 4, 4.85]
-  for (let index = 0; index < count; index += 1) {
-    if (index < count * 0.12) {
-      const [x, y, z] = sphericalPoint(random, random() * 1.15)
-      writePoint(target, index, x, y, z)
-    } else {
-      const group = index % 4
-      const angle = random() * Math.PI * 2
-      const tilt = group * Math.PI * 0.25 + 0.2
-      const radius = radii[group] + (random() - 0.5) * 0.2
-      const horizontal = Math.cos(angle) * radius
-      const vertical = Math.sin(angle) * radius
-      writePoint(
-        target,
-        index,
-        horizontal + (random() - 0.5) * 0.08,
-        vertical * Math.sin(tilt) + (random() - 0.5) * 0.08,
-        vertical * Math.cos(tilt) + (random() - 0.5) * 0.08,
-      )
-    }
-  }
-  return target
-}
-
-function buildHelix(count, random) {
-  const target = new Float32Array(count * 3)
-  const milestones = [-3.75, -1.25, 1.25, 3.75]
-  for (let index = 0; index < count; index += 1) {
-    if (index < count * 0.72) {
-      const t = random()
-      const strand = index % 2 === 0 ? 0 : Math.PI
-      const angle = t * Math.PI * 8 + strand
-      const radius = 2.15 + (random() - 0.5) * 0.16
-      writePoint(target, index, Math.cos(angle) * radius, -4.5 + t * 9, Math.sin(angle) * radius)
-    } else {
-      const milestone = index % 4
-      const angle = random() * Math.PI * 2
-      const radius = 2.85 + (random() - 0.5) * 0.22
-      writePoint(
-        target,
-        index,
-        Math.cos(angle) * radius,
-        milestones[milestone] + (random() - 0.5) * 0.1,
-        Math.sin(angle) * radius,
-      )
-    }
-  }
-  return target
-}
-
-function buildLattice(count, random) {
-  const target = new Float32Array(count * 3)
-  const levels = [-2.5, -1.67, -0.84, 0, 0.84, 1.67, 2.5]
-  for (let index = 0; index < count; index += 1) {
-    const axis = index % 3
-    const first = levels[Math.floor(random() * levels.length)]
-    const second = levels[Math.floor(random() * levels.length)]
-    const along = (random() - 0.5) * 8
-    const jitter = () => (random() - 0.5) * 0.025
-    if (axis === 0) writePoint(target, index, along, first + jitter(), second + jitter())
-    else if (axis === 1) writePoint(target, index, first * 1.55 + jitter(), along * 0.62, second + jitter())
-    else writePoint(target, index, first * 1.55 + jitter(), second + jitter(), along * 0.62)
-  }
-  return target
-}
 
 export function createSubjectTargets(count = PARTICLE_COUNT) {
   if (!Number.isInteger(count) || count < 1) throw new Error('INVALID_PARTICLE_COUNT')
@@ -104,8 +18,8 @@ export function createSubjectTargets(count = PARTICLE_COUNT) {
     targets: [
       boy.positions,
       india.positions,
-      buildConstellation(count, random),
-      buildLattice(count, random),
+      createConstellation(count, random),
+      createPortal(count, random),
     ],
     boyRegions: boy.regions,
     indiaOutlineCount: india.outlineCount,

@@ -4,14 +4,13 @@ import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from './morph.j
 const CONTROL_LABELS = ['Boy', 'India', 'Skills', 'Portal']
 
 export function playPortfolio({ canvas, container, signal }, objects, settings) {
-  const { universe, particles, network, coreRings, camera, targets, networkIndices } = objects
+  const { universe, particles, dust, camera, targets } = objects
   const doc = container.ownerDocument || null
   const browserWindow = doc?.defaultView || null
   const embedded = Boolean(doc?.body.classList.contains('embedded-mode'))
   const reducedMotion = browserWindow?.matchMedia('(prefers-reduced-motion: reduce)') || { matches: false }
   const sections = doc && !embedded ? SECTIONS.map(({ id }) => doc.getElementById(id)).filter(Boolean) : []
   const positions = particles.geometry.attributes.position
-  const networkPositions = network.geometry.attributes.position
   const pointer = { x: 0, y: 0, active: false }
   let offsets = []
   let progress = 0
@@ -51,8 +50,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   function setEmphasis(detail = {}) {
     emphasisKind = detail.kind || null
     emphasisIndex = Number.isInteger(detail.index) ? detail.index : 0
-    network.material.color.set(emphasisKind === 'experience' ? settings.violet : settings.cyan)
-    coreRings.scale.setScalar(1 + emphasisIndex * 0.025)
+    particles.material.color.set(emphasisKind ? '#E9FBFF' : '#FFFFFF')
   }
 
   function onKeydown(event) {
@@ -130,23 +128,29 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
     sampleMorph(targets, getMorphFrame(progress), positions.array)
+    const boyWeight = Math.max(0, 1 - progress)
+    const mapWeight = Math.max(0, 1 - Math.abs(progress - 1))
+    const skillWeight = Math.max(0, 1 - Math.abs(progress - 2))
+    const skillAngle = emphasisKind === 'skill' ? skillWeight * 0.35 : 0
+    const skillCos = Math.cos(skillAngle), skillSin = Math.sin(skillAngle)
     const flow = reducedMotion.matches ? 0 : settings.flowIntensity
     const pointerX = pointer.x * 5.5
     const pointerY = pointer.y * 3.8
     const dissolveRadius = 1.25 + settings.flowIntensity * 0.35
-
     for (let index = 0; index < positions.count; index += 1) {
       const offset = index * 3
-      let x = positions.array[offset]
-      let y = positions.array[offset + 1]
-      let z = positions.array[offset + 2]
+      let x = positions.array[offset], y = positions.array[offset + 1], z = positions.array[offset + 2]
+      if (skillAngle > 0 && index % 4 === emphasisIndex) {
+        const rotatedY = y * skillCos - z * skillSin
+        z = y * skillSin + z * skillCos
+        y = rotatedY
+      }
       if (flow > 0) {
-        y += Math.sin(time * 0.9 + index * 0.017) * 0.022 * flow
-        z += Math.cos(time * 0.7 + index * 0.013) * 0.022 * flow
+        y += Math.sin(time * 0.9 + index * 0.017) * 0.018 * flow
+        z += Math.cos(time * 0.7 + index * 0.013) * 0.018 * flow
       }
       if (pointer.active && !reducedMotion.matches) {
-        const dx = x - pointerX
-        const dy = y - pointerY
+        const dx = x - pointerX, dy = y - pointerY
         const distanceSquared = dx * dx + dy * dy + z * z * 0.08
         if (distanceSquared < dissolveRadius * dissolveRadius && distanceSquared > 0.0001) {
           const distance = Math.sqrt(distanceSquared)
@@ -156,38 +160,23 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
           z += strength * 0.35
         }
       }
-      positions.array[offset] = x
-      positions.array[offset + 1] = y
-      positions.array[offset + 2] = z
+      positions.array[offset] = x; positions.array[offset + 1] = y; positions.array[offset + 2] = z
     }
     positions.needsUpdate = true
-
-    for (let segment = 0; segment < networkIndices.length / 2; segment += 1) {
-      const a = networkIndices[segment * 2] * 3
-      const b = networkIndices[segment * 2 + 1] * 3
-      const outputA = segment * 6
-      const outputB = outputA + 3
-      networkPositions.array[outputA] = positions.array[a]
-      networkPositions.array[outputA + 1] = positions.array[a + 1]
-      networkPositions.array[outputA + 2] = positions.array[a + 2]
-      networkPositions.array[outputB] = positions.array[b]
-      networkPositions.array[outputB + 1] = positions.array[b + 1]
-      networkPositions.array[outputB + 2] = positions.array[b + 2]
-    }
-    networkPositions.needsUpdate = true
-    network.material.opacity = 0.06 + settings.flowIntensity * 0.1 + (emphasisKind ? 0.06 : 0)
+    particles.material.opacity = emphasisKind === 'experience' && mapWeight > 0 && !reducedMotion.matches
+      ? 0.9 + (Math.sin(time * 3) + 1) * 0.04 * mapWeight
+      : 0.94
 
     const mobile = !embedded && browserWindow?.innerWidth <= 760
-    const targetX = embedded ? 0 : mobile ? 0 : 2.5
-    const targetY = mobile ? 1.7 : 0
-    universe.position.x = damp(universe.position.x, targetX, 5, safeDt)
-    universe.position.y = damp(universe.position.y, targetY, 5, safeDt)
-    universe.rotation.y = time * 0.075 + emphasisIndex * 0.06
-    universe.rotation.x = Math.sin(time * 0.22) * 0.045
-    coreRings.rotation.y = time * 0.12
-    coreRings.rotation.z = time * -0.06
-    camera.position.x = pointer.active && !reducedMotion.matches ? pointer.x * 0.28 : 0
-    camera.position.y = 0.2 + (pointer.active && !reducedMotion.matches ? pointer.y * 0.18 : 0)
+    universe.position.x = damp(universe.position.x, 0, 5, safeDt)
+    universe.position.y = damp(universe.position.y, mobile ? 1.7 : 0, 5, safeDt)
+    const scale = damp(universe.scale.x, mobile ? 0.68 : 1, 5, safeDt)
+    universe.scale.setScalar(scale)
+    universe.rotation.y = time * 0.06 * (1 - boyWeight - mapWeight) + Math.sin(time * 0.35) * 0.08 * mapWeight + (emphasisKind === 'experience' ? emphasisIndex * 0.08 : 0)
+    universe.rotation.x = Math.sin(time * 0.22) * 0.025 * (1 - boyWeight)
+    dust.rotation.y = time * 0.008
+    camera.position.x = pointer.active && !reducedMotion.matches ? pointer.x * 0.22 : 0
+    camera.position.y = 0.2 + (pointer.active && !reducedMotion.matches ? pointer.y * 0.14 : 0)
     camera.lookAt(0, 0, 0)
   }
 
