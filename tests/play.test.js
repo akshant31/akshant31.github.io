@@ -28,12 +28,12 @@ test('damp approaches the target without overshooting', () => {
 })
 
 test('scroll offsets map to continuous section progress', () => {
-  const offsets = [0, 1000, 2000, 3500, 5000]
+  const offsets = [0, 1000, 2000, 3500]
   assert.equal(progressFromOffsets(offsets, -10), 0)
   assert.equal(progressFromOffsets(offsets, 500), 0.5)
   assert.equal(progressFromOffsets(offsets, 1500), 1.5)
-  assert.equal(progressFromOffsets(offsets, 4000), 3 + 1 / 3)
-  assert.equal(progressFromOffsets(offsets, 7000), 4)
+  assert.equal(progressFromOffsets(offsets, 2750), 2.5)
+  assert.equal(progressFromOffsets(offsets, 7000), 3)
   assert.throws(() => progressFromOffsets([0, 0], 10), /INVALID_SECTION_OFFSETS/)
 })
 
@@ -72,7 +72,7 @@ test('Play morphs the real particle buffer toward the selected chapter', async (
   play.setProgress(99)
   for (let frame = 0; frame < 300; frame += 1) play.update(1 / 60)
   for (let index = 0; index < 30; index += 1) {
-    assert.ok(Math.abs(current[index] - targets[4][index]) < 0.08)
+    assert.ok(Math.abs(current[index] - targets[3][index]) < 0.08)
   }
   play.dispose()
   scene.dispose()

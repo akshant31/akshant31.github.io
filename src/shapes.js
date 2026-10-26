@@ -1,5 +1,5 @@
-export const SECTION_IDS = ['hero', 'about', 'skills', 'experience', 'contact']
-export const PARTICLE_COUNT = 12000
+export const SECTION_IDS = ['hero', 'experience', 'skills', 'contact']
+export const PARTICLE_COUNT = 20000
 
 export function seededRandom(seed) {
   let state = seed >>> 0
@@ -141,7 +141,6 @@ export function createShapeTargets(count = PARTICLE_COUNT) {
     buildRawCloud(count, random),
     buildPipeline(count, random),
     buildConstellation(count, random),
-    buildHelix(count, random),
     buildLattice(count, random),
   ]
 }

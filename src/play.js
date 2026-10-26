@@ -1,7 +1,7 @@
 import { SECTIONS } from './content.js'
 import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from './morph.js'
 
-const CONTROL_LABELS = ['Raw', 'Pipeline', 'Skills', 'Timeline', 'Lattice']
+const CONTROL_LABELS = ['Boy', 'India', 'Skills', 'Portal']
 
 export function playPortfolio({ canvas, container, signal }, objects, settings) {
   const { universe, particles, network, coreRings, camera, targets, networkIndices } = objects
@@ -35,13 +35,13 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   }
 
   function setProgress(value) {
-    targetProgress = Math.max(0, Math.min(4, Number.isFinite(value) ? value : 0))
+    targetProgress = Math.max(0, Math.min(3, Number.isFinite(value) ? value : 0))
     if (reducedMotion.matches) progress = targetProgress
     updateControls()
   }
 
   function goTo(index) {
-    const safeIndex = Math.max(0, Math.min(4, Math.round(index)))
+    const safeIndex = Math.max(0, Math.min(3, Math.round(index)))
     setProgress(safeIndex)
     if (sections[safeIndex] && browserWindow) {
       sections[safeIndex].scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' })
@@ -89,7 +89,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   if (doc) {
     hint = doc.createElement('div')
     hint.className = 'scene-play-hint'
-    hint.textContent = 'Scroll or use 1–5 to transform the data · move the pointer to dissolve'
+    hint.textContent = 'Scroll or use 1–4 to transform the portrait · move the pointer to dissolve'
     controls = doc.createElement('div')
     controls.className = 'scene-play-controls'
     controls.setAttribute('aria-label', 'Data universe chapters')

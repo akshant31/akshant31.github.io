@@ -12,10 +12,11 @@ test('seeded random produces a repeatable bounded sequence', () => {
   assert.ok(new Set(values).size > 10)
 })
 
-test('five deterministic finite shapes are generated', () => {
+test('four deterministic finite shapes are generated', () => {
   const a = createShapeTargets(120)
   const b = createShapeTargets(120)
   assert.equal(a.length, SECTION_IDS.length)
+  assert.equal(a.length, 4)
   a.forEach((shape) => {
     assert.ok(shape instanceof Float32Array)
     assert.equal(shape.length, 360)
@@ -23,9 +24,7 @@ test('five deterministic finite shapes are generated', () => {
     assert.ok(shape.every((value) => Math.abs(value) <= 20))
   })
   assert.deepEqual(a, b)
-  for (let index = 1; index < a.length; index += 1) {
-    assert.notDeepEqual(a[index - 1], a[index])
-  }
+  for (let index = 1; index < a.length; index += 1) assert.notDeepEqual(a[index - 1], a[index])
 })
 
 test('particle count must be a positive integer', () => {
@@ -39,7 +38,7 @@ test('morph frames clamp and interpolate at section boundaries', () => {
   assert.deepEqual(getMorphFrame(0), { from: 0, to: 0, mix: 0 })
   assert.deepEqual(getMorphFrame(0.25), { from: 0, to: 1, mix: 0.25 })
   assert.deepEqual(getMorphFrame(1.5), { from: 1, to: 2, mix: 0.5 })
-  assert.deepEqual(getMorphFrame(4), { from: 4, to: 4, mix: 0 })
-  assert.deepEqual(getMorphFrame(9), { from: 4, to: 4, mix: 0 })
+  assert.deepEqual(getMorphFrame(3), { from: 3, to: 3, mix: 0 })
+  assert.deepEqual(getMorphFrame(9), { from: 3, to: 3, mix: 0 })
   assert.deepEqual(getMorphFrame(NaN), { from: 0, to: 0, mix: 0 })
 })
