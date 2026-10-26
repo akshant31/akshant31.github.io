@@ -2,7 +2,7 @@
 
 Date: 2026-10-26
 Branch: `feature/3d-data-portfolio`
-Status: Approved through collaborative design, pending written-spec review
+Status: Approved through collaborative design and written-spec review on 2026-10-26
 
 ## Concept
 
@@ -176,7 +176,7 @@ The map is a visual location reference, not a statement about disputed boundarie
 - Constellation, portal, map outline, and holographic accents use the two point buffers or HTML/CSS rather than extra scene geometries.
 - Reused typed arrays, vectors, and scratch state in frame updates.
 - No post-processing chain, shadow-casting lights, or per-frame geometry/material creation.
-- Renderer pixel density is capped at 1.75 on desktop and 1.5 on narrow screens.
+- Use Edit3D's supported hardware-aware pixel-ratio cap (2 on hardware renderers, 1 on software renderers) and its 2048 × 1536 view-pixel budget; do not fork or monkey-patch the SDK renderer.
 - While `document.hidden` is true, playback returns before advancing motion time or writing buffers; resume starts with a zero frame delta.
 - Local map data and procedural boy geometry avoid runtime model downloads.
 
