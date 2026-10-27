@@ -4,6 +4,7 @@ import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from '../src/mo
 import { createScene } from '../src/scene.js'
 import { createShapeTargets, PARTICLE_COUNT } from '../src/shapes.js'
 import { createProject } from '../src/project.js'
+import { createChapterFrames } from '../src/framing.js'
 
 function makeAsset() {
   return {
@@ -169,4 +170,17 @@ test('live reduced-motion activation snaps fractional morphs to a static chapter
     play.dispose()
     result.dispose()
   }
+})
+
+test('Play applies the responsive hero frame on its first update', async () => {
+  const result = createScene({ asset: makeAsset() })
+  const play = await result.play(makeContext())
+  const targets = createShapeTargets(PARTICLE_COUNT)
+  const expected = createChapterFrames(targets, { width: 1440, height: 900 })[0]
+  const universe = result.scene.getObjectByName('Data Universe')
+  play.update(0)
+  assert.equal(universe.position.y, expected.y)
+  assert.equal(universe.scale.x, expected.scale)
+  play.dispose()
+  result.dispose()
 })

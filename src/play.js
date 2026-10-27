@@ -1,6 +1,7 @@
 import { SECTIONS } from './content.js'
 import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from './morph.js'
 import { applyBoyMotion } from './boy-motion.js'
+import { createChapterFrames } from './framing.js'
 
 const CONTROL_LABELS = ['Boy', 'India', 'Skills', 'Portal']
 
@@ -14,6 +15,8 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   const positions = particles.geometry.attributes.position
   const pointer = { x: 0, y: 0, active: false }
   let offsets = []
+  let chapterFrames = []
+  let framingInitialized = false
   let progress = 0
   let targetProgress = 0
   let time = 0
@@ -25,6 +28,15 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   const buttons = []
 
   function measure() {
+    const width = browserWindow?.innerWidth || container.clientWidth || 1440
+    const height = browserWindow?.innerHeight || container.clientHeight || 900
+    chapterFrames = createChapterFrames(targets, {
+      width,
+      height,
+      fov: camera.fov,
+      cameraZ: camera.position.z,
+      mobile: !embedded && width <= 760,
+    })
     if (!browserWindow || sections.length !== SECTIONS.length) return
     offsets = sections.map((section) => section.offsetTop)
     const measured = progressFromOffsets(offsets, browserWindow.scrollY)
@@ -145,7 +157,22 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     }
     if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
-    sampleMorph(targets, getMorphFrame(progress), positions.array, phases)
+    const morphFrame = getMorphFrame(progress)
+    sampleMorph(targets, morphFrame, positions.array, phases)
+    const fromFrame = chapterFrames[morphFrame.from]
+    const toFrame = chapterFrames[morphFrame.to]
+    const desiredY = fromFrame.y + (toFrame.y - fromFrame.y) * morphFrame.mix
+    const desiredScale = fromFrame.scale + (toFrame.scale - fromFrame.scale) * morphFrame.mix
+    if (!framingInitialized || reducedMotion.matches) {
+      universe.position.y = desiredY
+      universe.scale.setScalar(desiredScale)
+      framingInitialized = true
+    } else {
+      universe.position.y = damp(universe.position.y, desiredY, 5, safeDt)
+      const scale = damp(universe.scale.x, desiredScale, 5, safeDt)
+      universe.scale.setScalar(scale)
+    }
+    universe.position.x = 0
     const boyWeight = Math.max(0, 1 - progress)
     if (!reducedMotion.matches && progress < 1) {
       applyBoyMotion(positions.array, boyRegions, time, pointer, boyWeight)
@@ -188,11 +215,6 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
       ? 0.9 + (Math.sin(time * 3) + 1) * 0.04 * mapWeight
       : 0.94
 
-    const mobile = !embedded && browserWindow?.innerWidth <= 760
-    universe.position.x = damp(universe.position.x, 0, 5, safeDt)
-    universe.position.y = damp(universe.position.y, mobile ? 1.7 : 0, 5, safeDt)
-    const scale = damp(universe.scale.x, mobile ? 0.68 : 1, 5, safeDt)
-    universe.scale.setScalar(scale)
     universe.rotation.y = time * 0.06 * (1 - boyWeight - mapWeight) + Math.sin(time * 0.35) * 0.08 * mapWeight + (emphasisKind === 'experience' ? emphasisIndex * 0.08 : 0)
     universe.rotation.x = Math.sin(time * 0.22) * 0.025 * (1 - boyWeight)
     dust.rotation.y = time * 0.008
@@ -201,6 +223,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     camera.lookAt(0, 0, 0)
   }
 
+  if (chapterFrames.length !== 4) measure()
   update(0)
   return {
     update,
