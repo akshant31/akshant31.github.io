@@ -31,20 +31,15 @@ test('boy rig is deterministic and finite with breathing, wave, and head trackin
   assert.ok(a.every(Number.isFinite))
 })
 
-test('raised arm moves more than planted legs', () => {
+test('raised arm, torso, and free arm move without leg-region exceptions', () => {
   const { positions, regions } = createBoy(5000, seededRandom(31))
   const output = new Float32Array(positions)
   applyBoyMotion(output, regions, 1.4, { x: 0, active: false }, 1)
-  const arm = displacement(output, positions, regions, BOY_REGION.RAISED_LOWER)
-  const leftLeg = displacement(output, positions, regions, BOY_REGION.LEFT_LEG)
-  const rightLeg = displacement(output, positions, regions, BOY_REGION.RIGHT_LEG)
-  assert.ok(arm > leftLeg * 2, `arm ${arm}, left leg ${leftLeg}`)
-  assert.ok(arm > rightLeg * 2, `arm ${arm}, right leg ${rightLeg}`)
-  for (let index = 0; index < regions.length; index += 1) {
-    if (regions[index] !== BOY_REGION.LEFT_LEG && regions[index] !== BOY_REGION.RIGHT_LEG) continue
-    const offset = index * 3
-    assert.equal(output[offset], positions[offset])
-    assert.equal(output[offset + 1], positions[offset + 1])
-    assert.equal(output[offset + 2], positions[offset + 2])
-  }
+  const raised = displacement(output, positions, regions, BOY_REGION.RAISED_LOWER)
+  const torso = displacement(output, positions, regions, BOY_REGION.TORSO)
+  const free = displacement(output, positions, regions, BOY_REGION.FREE_LOWER)
+  assert.ok(raised > 0.001, `raised arm displacement ${raised}`)
+  assert.ok(torso > 0.001, `torso displacement ${torso}`)
+  assert.ok(free > 0.001, `free arm displacement ${free}`)
+  assert.ok(output.every(Number.isFinite))
 })

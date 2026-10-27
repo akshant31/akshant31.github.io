@@ -35,10 +35,8 @@ export function applyBoyMotion(output, regions, time, pointer, weight) {
     if (region === BOY_REGION.RAISED_LOWER) rotateZ(output, offset, -1.45, 2.85, forearmWave)
     if (region === BOY_REGION.RAISED_UPPER || region === BOY_REGION.RAISED_LOWER) rotateZ(output, offset, -0.82, 2.05, wave)
     if (region === BOY_REGION.HEAD) rotateY(output, offset, headYaw)
-    if (region !== BOY_REGION.LEFT_LEG && region !== BOY_REGION.RIGHT_LEG) {
-      output[offset] += shiftX
-      output[offset + 1] += bobY
-    }
+    output[offset] += shiftX
+    output[offset + 1] += bobY
   }
   return output
 }

@@ -7,8 +7,6 @@ export const BOY_REGION = Object.freeze({
   RAISED_LOWER: 3,
   FREE_UPPER: 4,
   FREE_LOWER: 5,
-  LEFT_LEG: 6,
-  RIGHT_LEG: 7,
 })
 
 const ellipsoid = (center, radii, region, weight) => ({ type: 'ellipsoid', center, radii, region, weight })
@@ -52,12 +50,6 @@ function createParts() {
     capsule([0.82, 2.05, 0], [1.25, 0.95, 0.1], 0.28, R.FREE_UPPER, 0.7),
     capsule([1.25, 0.95, 0.1], [1.15, -0.05, 0.18], 0.22, R.FREE_LOWER, 0.6),
     ellipsoid([1.15, -0.22, 0.18], [0.23, 0.34, 0.18], R.FREE_LOWER, 0.3),
-    capsule([-0.43, -0.05, 0], [-0.5, -1.85, 0.05], 0.34, R.LEFT_LEG, 1.1),
-    capsule([-0.5, -1.85, 0.05], [-0.55, -3.55, 0], 0.27, R.LEFT_LEG, 1.0),
-    capsule([0.43, -0.05, 0], [0.5, -1.85, 0.05], 0.34, R.RIGHT_LEG, 1.1),
-    capsule([0.5, -1.85, 0.05], [0.55, -3.55, 0], 0.27, R.RIGHT_LEG, 1.0),
-    ellipsoid([-0.55, -3.85, 0.18], [0.36, 0.25, 0.65], R.LEFT_LEG, 0.5),
-    ellipsoid([0.55, -3.85, 0.18], [0.36, 0.25, 0.65], R.RIGHT_LEG, 0.5),
   ]
 }
 
