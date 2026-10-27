@@ -1,99 +1,64 @@
-# 3D Data Universe — Production Design Brief
+# Immersive Particle Portrait — Production Design Brief
 
-## One-line concept
+The approved implementation designs are:
 
-A calm, editorial portfolio in which thousands of records continually organize themselves into the systems Akshant builds: pipelines, skill networks, career milestones, and reliable data structures.
+- `docs/superpowers/specs/2026-10-26-immersive-particle-portrait-design.md`
+- `docs/superpowers/specs/2026-10-27-particle-composition-revision-design.md`
 
-## Requirements checklist
+## Concept
 
-- [ ] Reuse the current portfolio's real content without invented claims.
-- [ ] Work on a new branch, leaving production untouched.
-- [ ] Build a 3D experience inspired by the supplied particle reference.
-- [ ] Make the subject communicate data engineering rather than a generic space theme.
-- [ ] Include Home, About, Skills, Experience, and Contact.
-- [ ] Support scroll, pointer, touch, keyboard, and direct navigation.
-- [ ] Keep semantic HTML readable without WebGL.
-- [ ] Provide responsive and reduced-motion behavior.
-- [ ] Provide an embedded Edit3D scene plus the normal portfolio runtime.
-- [ ] Register meaningful objects, named materials, and working parameters.
-- [ ] Complete visual review, interaction checks, build checks, and cleanup.
+A calm, editorial data-engineering portfolio in which one persistent particle subject changes form around Akshant Kumar’s real content. The scene carries visual meaning, while semantic HTML carries every essential fact and action.
 
-## Reference feature → approach
+The implementation uses 20,000 main particles and 1,200 ambient points, near-black graphite, soft ivory, cyan `#00D4FF`, and restrained violet `#9D4EDD`. Production remains unchanged.
 
-| Reference feature observed/researched | Approach in this piece |
-| --- | --- |
-| Full-screen human silhouette made from fine particles | Full-screen abstract data core and morphing engineering structures; no portrait or copied geometry |
-| Hover dissolution and reconstruction | Local pointer repulsion with damped return to the active data shape |
-| Scroll-driven particle morphing | Five deterministic target shapes tied to semantic portfolio sections |
-| Dark, restrained stage | Graphite background and cool-gray particles with the existing cyan/violet accents |
-| Oversized, minimal typography | Editorial Inter headings and compact Fira Code technical labels |
-| Motion as the main visual subject | One persistent 12,000-point subject rather than unrelated decorative effects |
-| Microinteractions | Skill/milestone emphasis, nav state, subtle link motion, and tactile buttons |
-| Content layered around the subject | Text occupies deliberate safe zones; WebGL never carries essential copy |
+## Composition
 
-## Scale and layout
+| Chapter | Centered particle subject | Edge content |
+| --- | --- | --- |
+| Boy | Articulated half-body figure, bottom anchored with no legs or feet | Top-centered Akshant Kumar; compact Data Engineer label |
+| India | Enlarged north-up outer silhouette with a bright contour and restrained interior depth | Based in India; 7+ years; four concise experience entries |
+| Skills | Large four-group orbital constellation | Selectable categories and one active tool list |
+| Contact | Deep particle portal with a clear central opening | Closing statement, email, and GitHub |
 
-Three.js units are abstract but consistent. The subject fits approximately 10 × 10 × 8 units. Main camera: perspective 42°, near 0.1, far 100, initial position `[0, 0.2, 18]`. The primary subject remains near the origin.
+The fixed WebGL canvas uses responsive, per-chapter framing rather than a shared zoom. Intentional cropping is limited to the hero’s lower torso at the bottom edge and atmospheric particles beyond the viewport. The boy’s head remains clear of the top-centered name and fixed header.
 
-```text
-Desktop: [ editorial text safe zone ] [ 3D subject safe zone ]
-Mobile:  [ compact 3D stage ] / [ semantic content ]
+## India geometry and provenance
 
-Raw cloud → pipeline → constellation → helix → lattice
-   Home      About       Skills      Experience   Contact
-```
+Derived from the user-supplied Indiamap.pdf; source rights were not independently established.
 
-## Palette and materials
+The only geometry input is the manually cleaned outer mainland trace in `docs/reference/india-mainland-trace.svg`. Internal borders, labels, roads, photographs, decorative cartography, and the page inset are excluded.
 
-| Material | Color | Roughness / metalness | Treatment |
-| --- | --- | --- | --- |
-| Data Universe · Particle Field | cool gray with cyan/violet accents | Unlit PointsMaterial | Fixed-size soft particles; no bloom |
-| Data Universe · Network Links | `#244152` plus active cyan | Unlit LineBasicMaterial | Sparse transparent connections |
-| Data Universe · Core Rings | cyan/violet | Unlit MeshBasicMaterial | Thin geometric rings, restrained opacity |
-| Background | `#0B0D12` | N/A | Solid scene background |
-| UI text | `#E8EBF2` / `#8A93A6` | N/A | High contrast, never pure white |
+The reproducible workflow is manual SVG trace → `python scripts/prepare-india-map.py` validation and normalization → SVG/PNG visual comparison. The script produces `src/data/india-outline.js` and the previews in `docs/reference/`. Rejected automatic candidates and scratch extraction directories are not geometry inputs. The source PDF stays local and ignored; no map data is fetched at runtime.
 
-Particles and line effects are intentionally unlit stylized data representations; realistic PBR, outdoor sky, terrain, and Blender assets are not appropriate to this brief.
+## Interaction and accessibility
 
-## Light and atmosphere
+- Native scrolling and four direct header links select chapters without scroll hijacking.
+- Keys `1`–`4` select chapters directly; adjacent arrow keys move forward and backward.
+- Pointer movement produces local dissolution and restoration without carrying essential content in the canvas.
+- Every skill category reveals only its selected tool panel; every experience entry exposes a reachable selection control and scene emphasis.
+- Reduced motion freezes idle rigging, pointer scattering, parallax, ambient motion, and eased travel at exact chapter frames.
+- With WebGL unavailable, all four semantic chapters, navigation, and contact links remain readable in static portfolio mode.
 
-No realistic lighting rig is needed for unlit particles. Depth comes from perspective, particle size attenuation, controlled opacity, spatial layering, and camera parallax. Use the plugin's ACES tone-mapping helper for consistent output. Avoid post-processing and bloom.
+## Editable scene
 
-## Main views and review views
+The root Edit3D project preserves project id `akshant-data-universe` and artifact id `d655609d-2886-476c-9abe-f9dda9200f2a`. Registered objects are Data Universe, Particle Field, Ambient Dust, and Main camera.
 
-1. Home: complete particle core with name and role unobstructed.
-2. About: pipeline direction readable; terminal panel legible.
-3. Skills: constellation and selected group emphasis visible.
-4. Experience: helix and active milestone readable.
-5. Contact: ordered lattice and contact links unobstructed.
-6. Edit3D contact sheet: edit framing plus three orbit views of the subject.
-7. Mobile: no horizontal overflow, blocked controls, or unreadable overlay.
+Editable parameter groups are:
 
-## Interaction and UI
+- Data Field: particle size, default `0.075`.
+- Data Motion: motion speed `1` and flow intensity `0.7`.
+- Data Palette: cyan `#00D4FF` and violet `#9D4EDD`.
 
-Normal mode: semantic nav, scroll, pointer dissolve, skill-group selection, experience-milestone selection, email/GitHub links. Embedded Play: five labeled shape buttons, shortcuts `1`–`5`, arrow-key section movement, and a one-line usage hint visible from the first frame. Escape returns to editing through the host's existing behavior.
+The separate `preview/` launcher opens the normal full website; the root project opens the editable scene.
 
-## Editable items
+## Performance and implementation
 
-- Data Universe object: transform and visibility through normal object controls.
-- Particle Field material: opacity, color, and other material properties supported by the SDK.
-- Global Data Field group: particle size, applied directly to the PointsMaterial and verified visually.
-- Global Data Motion group: motion speed and flow intensity, read live during Play.
-- Global Data Palette group: cyan and violet accent colors, applied through an SDK subscription.
-- Main camera: normal camera controls.
+The four subjects share one 20,000-point buffer. Geometry and typed arrays are reused during playback, with no per-frame geometry or material creation. The unlit particle treatment uses size attenuation, controlled opacity, perspective, and ACES tone mapping without bloom or realistic lighting.
 
-No particle-count control is exposed unless rebuilding and restore behavior are fully implemented and tested.
-
-## Performance budget
-
-Approximately 12,000 points in one draw call, fewer than 150 line segments, three thin core rings, and no shadow-casting lights. No per-frame geometry/material creation. Reuse vectors and typed arrays. Cap renderer pixel ratio through the SDK. Target smooth browsing on a typical laptop and readable fallback on smaller devices.
-
-## Routing
-
-- Particle field, morph targets, network lines, rings, camera, and interaction: Three.js, because all are generated and change live.
-- Blender: installed and verified as local tooling, but no major element routes to it. The piece contains no organic characters, sculpted forms, architecture, UV-baked surfaces, or static hero props requiring Blender.
-- External models/textures: none. All geometry is deterministic and code-generated.
+Professional content remains sourced from the existing portfolio. The half-body figure is original procedural geometry and is not presented as Akshant’s exact likeness.
 
 ## Review and delivery
 
-Record only checks actually run in `src/review.js`. Complete a find → fix → re-verify visual round before marking review passed. Keep source, review evidence, project data, and the real artifact ID. Deliver the branch and preview without merging or deploying production.
+`src/review.js` records measured evidence from actual desktop and mobile captures, interaction and reduced-motion checks, WebGL-disabled fallback, editable-scene controls, and the complete automated gate. Review scratch stays ignored under `.superpowers/sdd/final-review/`.
+
+Delivery stays on `feature/3d-data-portfolio`; no production merge or deployment is part of this work.

@@ -2,45 +2,38 @@ export default {
   status: 'passed',
   checks: [
     {
-      name: 'Five desktop chapters and camera composition',
+      name: 'Four immersive desktop chapters',
       status: 'passed',
-      evidence: '2026-10-25 desktop screenshot review: raw cloud, pipeline, constellation, helix, and lattice were distinct and readable; camera centering and low contrast were fixed and rechecked with no overflow or runtime errors.',
+      evidence: '2026-10-27 actual 1440 × 900 capture review: the bottom-anchored half-body boy, enlarged India, skills constellation, and portal were visually inspected with readable content and reachable controls. The hero torso crossed the bottom by 38.16 px and cleared the name by 46.31 px; every chapter had zero horizontal overflow.',
     },
     {
-      name: 'Five mobile chapters and content accessibility',
+      name: 'Four mobile chapters and responsive composition',
       status: 'passed',
-      evidence: '2026-10-25 390 × 844 screenshot review: every section remained readable without horizontal overflow; the fixed scene status was hidden on phones and the About and Experience sections were rechecked.',
+      evidence: '2026-10-27 actual 390 × 844 mobile capture review: the top-centered name, bottom-anchored portrait, north-up India, constellation, and portal remained readable with zero horizontal overflow. The hero torso crossed the bottom by 39.66 px with 151.64 px heading clearance; Skills occupied 366.59 × 292.06 px and all essential controls were reachable.',
     },
     {
-      name: 'Portfolio navigation and scene interactions',
+      name: 'Navigation, selections, pointer restoration, and contact links',
       status: 'passed',
-      evidence: 'Browser checks passed for navigation links, Digit1/Digit4/ArrowLeft shortcuts, skill and experience emphasis, pointer dissolution and parallax, and contact hrefs; no runtime or console errors were captured.',
+      evidence: 'Real-browser checks passed for native scrolling, all four header links, shortcuts 1–4, all arrow-key directions, every skill category, and every experience row. Pointer input changed 12,651 coordinates with maximum displacement 0.29030419141054153; pointer leave restored the settled target exactly. Email and GitHub hrefs remained mailto:akst31@yahoo.com and https://github.com/akshant31 without inspection navigating away.',
     },
     {
-      name: 'Reduced motion and no-WebGL fallback',
+      name: 'Reduced motion and WebGL-disabled fallback',
       status: 'passed',
-      evidence: 'With reduced motion, particle buffers and ambient rotations were identical across 450 ms. With WebGL disabled, all five sections stayed visible, navigation worked, and static portfolio mode replaced the canvas.',
+      evidence: 'At all four chapters, reduced motion produced exact target buffers and chapter frames with zero position differences and static rig, camera, and ambient rotation. With WebGL disabled, all four semantic chapters and contact links remained readable with zero overflow and Static portfolio mode.',
     },
     {
-      name: 'Automated content and visual regression checks',
+      name: 'Editable root scene and Play controls',
       status: 'passed',
-      evidence: 'npm test passed 23 of 23 tests, including deterministic morphs, camera framing, particle contrast, mobile overlap prevention, reduced-motion behavior, editor-owned material replacement, and normal website preview routing.',
+      evidence: 'The embedded root scene loaded dataUniverse, particleField, ambientDust, camera, and the dataField, dataMotion, and dataPalette groups with approved defaults. Particle-size and palette edits changed the live scene; normal-speed Play-canvas hashes differed while zero-speed hashes were identical.',
     },
     {
-      name: 'Normal website preview content and scene',
+      name: 'Automated regression and production gate',
       status: 'passed',
-      evidence: '2026-10-26 actual Work browser runtime through the non-scene preview launcher: embedded mode was off, the header and all five semantic sections were visible, Skills navigation worked, and the normal preview mounted 12,000 particles with WebGL ready.',
-    },
-    {
-      name: 'Standalone editor parameters, history, and persistence',
-      status: 'passed',
-      evidence: 'Scene lint returned no issues and framing offset was zero. Particle size and palette edits changed the real scene; undo/redo restored both parameters and editor-owned ring materials. Save/reload preserved the test values, then the approved defaults were restored and verified with no console errors.',
-    },
-    {
-      name: 'Standalone editor Play and visual inspection',
-      status: 'passed',
-      evidence: 'Four-view contact sheet and Play screenshots were visually reviewed. Raw and Lattice chapter controls changed the actual Play particle buffer (hash 78786213 to 995418464), and the rendered lattice matched its target with zero sampled x-coordinate error.',
+      evidence: 'Final gate: npm test passed 44 of 44 tests; Edit3D compile check and production build passed; git diff --check passed.',
     },
   ],
-  limitations: ['Editor checks used the standalone offscreen SDK surface; native desktop toolbar and IPC integration were not exercised.'],
+  limitations: [
+    'Native desktop toolbar and IPC integration were not exercised; editable-scene checks used the actual embedded browser scene.',
+    'No pre-revision chapter captures were available; enlargement was assessed from current composition and measured bounds without a numerical before/after claim.',
+  ],
 }

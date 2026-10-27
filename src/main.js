@@ -24,7 +24,7 @@ async function main() {
       await preview.play()
       document.documentElement.dataset.webgl = 'ready'
       const status = document.getElementById('scene-status-text')
-      if (status) status.textContent = 'Data universe online'
+      if (status) status.textContent = 'Particle portrait online'
     }
   } catch (error) {
     console.error('[Portfolio] 3D initialization failed:', error)

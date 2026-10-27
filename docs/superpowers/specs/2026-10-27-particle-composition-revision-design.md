@@ -2,7 +2,7 @@
 
 Date: 2026-10-27
 Branch: `feature/3d-data-portfolio`
-Status: Visual direction, written specification, and manual-trace amendment approved by the user on 2026-10-27
+Status: Visual direction, written specification, and manual-trace amendment approved by the user on 2026-10-27; implementation and measured review recorded in src/review.js
 
 ## Purpose
 
