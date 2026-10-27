@@ -2,7 +2,7 @@
 
 Date: 2026-10-27
 Branch: `feature/3d-data-portfolio`
-Status: Visual direction approved by the user on 2026-10-27; written specification awaiting user review
+Status: Visual direction, written specification, and manual-trace amendment approved by the user on 2026-10-27
 
 ## Purpose
 
@@ -16,7 +16,7 @@ This revision replaces the earlier full-body, lower-left-name, and Natural Earth
 - Open with a stylized half-body boy: head, torso, and arms only, with no legs, feet, or shoes.
 - Anchor the portrait at the bottom of the viewport so the lower torso continues beyond the bottom edge.
 - Move `Akshant Kumar` to a horizontally centered position near the top of the hero composition, below the fixed header's safe area.
-- Extract India’s primary outer national outline from the supplied PDF using a vector-first workflow, with high-resolution raster-contour extraction as a fallback.
+- Use a manually cleaned outer-contour trace of the main India map, approved on 2026-10-27 after source inspection showed that automatic vector/raster extraction could not reliably exclude map artifacts.
 - Use no internal state borders, labels, roads, photographs, or page inset in the particle map.
 - Retain a restrained particle fill inside the outer silhouette for three-dimensional depth.
 - Preserve four chapters, 20,000 main particles, at most 1,200 ambient particles, cyan/violet accents, real portfolio facts, native scrolling, accessibility, and the editable root scene.
@@ -84,14 +84,14 @@ No essential text may be hidden behind particles. Intentional cropping is limite
 
 ### Extraction workflow
 
-1. Inspect the PDF’s vector drawing operators and attempt to isolate the outer mainland contour.
-2. Reject paths associated with labels, roads, photographs, internal state boundaries, graticules, decorative frames, and the inset.
-3. If vector path identity cannot be established reliably, render the relevant main-map region at high resolution and extract the outer contour from that crop.
-4. Clean the selected ring by removing duplicate closure points, degenerate segments, and irrelevant small artifacts while preserving distinguishing coastal and northern features.
-5. Normalize the final ring consistently for the existing local sampler. Preserve north-up and west-left orientation; do not mirror the country.
-6. Review a rendered outline against the supplied PDF before using it in the full scene.
+1. Use the `2807 × 3974` main-map page render as the visual tracing reference; the PDF’s embedded raster artwork and rejected automatic-extraction experiments are diagnostic inputs only.
+2. Manually trace one closed outer mainland polyline in SVG source coordinates. Use explicit absolute `M`, `L`, and `Z` commands with at least 80 line segments so coastal and northern features remain recognizable.
+3. Exclude internal state boundaries, labels, roads, photographs, graticules, decorative frames, and the page inset. Do not use the cleaner-looking inset as a substitute for the main map.
+4. Validate finite coordinates, closure, non-degenerate segments, and India aspect-ratio bounds. Flip the SVG y-down coordinates during normalization to preserve north-up/west-left orientation.
+5. Generate normalized SVG and PNG contour previews and compare them with the main PDF map before using the geometry in the full scene.
+6. Commit the small manual trace, derived coordinate asset, normalization tooling, and previews. Keep the source PDF local and ignored.
 
-Automated extraction must not be treated as proof of correctness. A human-viewable contour render and visual comparison are required because a dense political map contains many valid-looking but incorrect paths.
+A human-viewable contour render and visual comparison are mandatory. No automatic candidate from the rejected extraction experiments may become the source geometry.
 
 ### Particle treatment
 
