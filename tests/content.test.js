@@ -69,3 +69,16 @@ test('immersive layout uses full viewport scenes and centered-edge composition',
   assert.ok(css.includes('.chapter-progress'))
   assert.ok(!css.includes('min-height: 175svh'))
 })
+
+test('hero name stays top centered in base and mobile rules', () => {
+  const rules = css.match(/\.hero-name\s*\{[^}]*\}/g) || []
+  assert.ok(rules.length >= 2, 'missing base or mobile hero-name rule')
+  for (const rule of rules) {
+    assert.match(rule, /top:\s*0;/)
+    assert.match(rule, /left:\s*50%;/)
+    assert.match(rule, /translateX\(-50%\)/)
+    assert.doesNotMatch(rule, /bottom:/)
+  }
+  assert.equal((html.match(/<h1\b/g) || []).length, 1)
+  assert.ok(html.includes('<h1 class="hero-name" id="hero-title"><span>Akshant</span><span>Kumar</span></h1>'))
+})
