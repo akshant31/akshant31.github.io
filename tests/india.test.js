@@ -5,16 +5,21 @@ import { INDIA_RINGS } from '../src/data/india-outline.js'
 import { createIndia, pointInPolygon } from '../src/subjects/india.js'
 import { createSubjectTargets, seededRandom } from '../src/shapes.js'
 
-const mainRing = INDIA_RINGS.reduce((largest, ring) => ring.length > largest.length ? ring : largest)
+const mainRing = INDIA_RINGS[0]
 
-test('local India asset retains detailed Natural Earth geometry and attribution', () => {
-  assert.ok(INDIA_RINGS.length >= 10)
-  assert.ok(mainRing.length > 500)
+test('local India asset is one closed PDF-derived mainland ring with truthful attribution', () => {
+  assert.equal(INDIA_RINGS.length, 1)
+  assert.ok(mainRing.length > 80)
+  assert.deepEqual(mainRing[0], mainRing[mainRing.length - 1])
   const source = readFileSync(new URL('../src/data/india-outline.js', import.meta.url), 'utf8')
-  assert.ok(source.includes('Made with Natural Earth'))
-  assert.ok(source.includes('public domain'))
-  assert.ok(source.includes('ne_50m_admin_0_countries.geojson'))
-  for (const ring of INDIA_RINGS) for (const point of ring) assert.ok(point.every(Number.isFinite))
+  assert.ok(source.includes('Derived from the user-supplied Indiamap.pdf'))
+  assert.ok(source.includes('Source rights were not independently established'))
+  assert.ok(!source.includes('Natural Earth'))
+  for (let index = 1; index < mainRing.length; index += 1) {
+    const a = mainRing[index - 1], b = mainRing[index]
+    assert.ok(a.every(Number.isFinite) && b.every(Number.isFinite))
+    assert.ok(Math.hypot(b[0] - a[0], b[1] - a[1]) > 0)
+  }
 })
 
 test('India target has recognizable projected bounds and sampled interior', () => {
@@ -28,7 +33,7 @@ test('India target has recognizable projected bounds and sampled interior', () =
   }
   const width = maxX - minX, height = maxY - minY
   assert.ok(height > 7.5 && height <= 8.05, `India height ${height}`)
-  assert.ok(width / height > 0.75 && width / height < 1.15, `India aspect ${width / height}`)
+  assert.ok(width / height > 0.65 && width / height < 1.25, `India aspect ${width / height}`)
   for (let index = outlineCount; index < outlineCount + 100; index += 1) {
     assert.ok(pointInPolygon([positions[index * 3], positions[index * 3 + 1]], mainRing), 'interior particle escaped mainland')
   }
