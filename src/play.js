@@ -40,7 +40,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   function measureFrames() {
     const width = browserWindow?.innerWidth || container.clientWidth || 1440
     const height = browserWindow?.innerHeight || container.clientHeight || 900
-    const mobile = !embedded && width <= 760
+    const mobile = !embedded && width <= 820
     chapterFrames = createChapterFrames(targets, {
       width,
       height,
@@ -58,7 +58,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   function ensureFrames() {
     const width = browserWindow?.innerWidth || container.clientWidth || 1440
     const height = browserWindow?.innerHeight || container.clientHeight || 900
-    const mobile = !embedded && width <= 760
+    const mobile = !embedded && width <= 820
     if (chapterFrames.length !== 4 || width !== frameViewport.width || height !== frameViewport.height || mobile !== frameViewport.mobile || camera.fov !== frameViewport.fov || camera.position.z !== frameViewport.cameraZ) {
       measureFrames()
     }

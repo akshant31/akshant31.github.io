@@ -6,10 +6,10 @@ const DESKTOP = Object.freeze([
 ])
 
 const MOBILE = Object.freeze([
-  Object.freeze({ bottom: -1.08, top: 0.48, width: 0.90 }),
-  Object.freeze({ bottom: -0.25, top: 0.70, width: 0.90 }),
-  Object.freeze({ bottom: -0.36, top: 0.64, width: 0.94 }),
-  Object.freeze({ bottom: -0.40, top: 0.62, width: 0.94 }),
+  Object.freeze({ bottom: -1.08, top: 0.26, width: 0.98 }),
+  Object.freeze({ bottom: -0.34, top: 0.32, width: 0.94 }),
+  Object.freeze({ bottom: -0.40, top: 0.28, width: 0.94 }),
+  Object.freeze({ bottom: -0.26, top: 0.24, width: 0.94 }),
 ])
 
 export function getTargetBounds(target) {

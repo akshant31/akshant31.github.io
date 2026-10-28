@@ -34,7 +34,7 @@ test('portfolio preserves the approved professional facts and contacts', () => {
 })
 
 test('responsive, reduced-motion, focus, and fallback styles exist', () => {
-  assert.ok(css.includes('@media (max-width: 760px)'))
+  assert.ok(css.includes('@media (max-width: 820px)'))
   assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'))
   assert.ok(css.includes(':focus-visible'))
   assert.ok(css.includes('[data-webgl="unavailable"]'))
@@ -47,7 +47,7 @@ test('scene overlays preserve text contrast without hiding the data universe', (
 })
 
 test('mobile scene status cannot obscure scrolling portfolio content', () => {
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.scene-status\s*\{[^}]*display:\s*none;/)
+  assert.match(css, /@media \(max-width: 820px\)[\s\S]*?\.scene-status\s*\{[^}]*display:\s*none;/)
 })
 
 test('skill panels are readable before JavaScript and enhanced after initialization', () => {
@@ -134,5 +134,5 @@ test('theme control starts accessible and light theme tokens are defined', () =>
 })
 
 test('mobile edge shade inherits the active theme', () => {
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?body::before\s*\{\s*background:\s*var\(--edge-shade\);\s*\}/)
+  assert.match(css, /@media \(max-width: 820px\)[\s\S]*?body::before\s*\{\s*background:\s*var\(--edge-shade\);\s*\}/)
 })
