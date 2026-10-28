@@ -6,7 +6,7 @@ Status: Visual direction and design approved by the user on 2026-10-28; written 
 
 ## Purpose
 
-Refine the existing immersive portfolio without replacing its working particle system. Correct the far-northeastern India trace and mobile overlaps, introduce cinematic typography with restrained cursive accents, add a persistent light theme with vibrant particles, animate text during chapter changes, and turn the desktop pointer into a falling-star comet.
+Refine the existing immersive portfolio without replacing its working particle system. Correct the northern Ladakh and far-northeastern India trace and mobile overlaps, introduce cinematic typography with restrained cursive accents, add a persistent light theme with vibrant particles, animate text during chapter changes, and turn the desktop pointer into a falling-star comet.
 
 The selected direction is **Cinematic Editorial**. Dark mode remains the default; the user explicitly selected a light-mode toggle rather than a light default or light-only website.
 
@@ -36,7 +36,7 @@ The selected direction is **Cinematic Editorial**. Dark mode remains the default
 
 ## India contour correction
 
-- Inspect the current far-northeastern trace against the same user-supplied main-map PDF and correct only points that diverge from its visible outer national border.
+- Inspect the current northern Ladakh and far-northeastern trace against the same user-supplied main-map PDF and correct only points that diverge from its visible outer national border.
 - Keep the existing `2807 × 3974` source coordinate system, one closed `path#india-mainland`, explicit absolute `M`/`L`/`Z`, deterministic normalizer, and single normalized ring.
 - Do not redraw the entire map, add internal divisions, use the inset, or silently switch to rejected automatic candidates or a third-party geometry source.
 - If the source itself clips the relevant outer border, report that limitation instead of inventing geometry outside the supplied source.
