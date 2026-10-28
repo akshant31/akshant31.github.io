@@ -114,3 +114,7 @@ test('theme control starts accessible and light theme tokens are defined', () =>
   assert.ok(html.includes('data-theme-label'))
   assert.ok(css.includes(":root[data-theme='light']"))
 })
+
+test('mobile edge shade inherits the active theme', () => {
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?body::before\s*\{\s*background:\s*var\(--edge-shade\);\s*\}/)
+})
