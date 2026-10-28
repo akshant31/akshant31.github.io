@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import * as THREE from 'three'
 import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from '../src/morph.js'
 import { createScene } from '../src/scene.js'
 import { createShapeTargets, PARTICLE_COUNT } from '../src/shapes.js'
@@ -205,7 +206,11 @@ test('pointer leave damps dissolution through successive frames before exact res
     }
     return {
       context: {
-        canvas: { addEventListener() {}, focus() {} },
+        canvas: {
+          addEventListener() {},
+          focus() {},
+          getBoundingClientRect: () => ({ left: 0, top: 0, width: 1200, height: 900 }),
+        },
         container: { append() {}, replaceChildren() {}, ownerDocument: doc },
         signal: { aborted: false, addEventListener() {} },
       },
@@ -262,5 +267,203 @@ test('pointer leave damps dissolution through successive frames before exact res
     referencePlay.dispose()
     pointerScene.dispose()
     referenceScene.dispose()
+  }
+})
+
+function makeResponsiveContext(viewport, reducedMotion) {
+  const listeners = {}
+  const browserWindow = {
+    matchMedia: () => reducedMotion,
+    addEventListener(type, listener) { listeners[type] = listener },
+    innerWidth: viewport.width,
+    innerHeight: viewport.height,
+    scrollY: 0,
+  }
+  const doc = {
+    hidden: false,
+    body: { classList: { contains: () => viewport.embedded ?? true } },
+    defaultView: browserWindow,
+    getElementById: () => null,
+    createElement: () => ({ setAttribute() {}, addEventListener() {}, append() {}, remove() {} }),
+    addEventListener() {},
+  }
+  return {
+    listeners,
+    browserWindow,
+    context: {
+      canvas: {
+        addEventListener() {},
+        focus() {},
+        getBoundingClientRect: () => ({ left: viewport.left || 0, top: viewport.top || 0, width: viewport.width, height: viewport.height }),
+      },
+      container: { append() {}, replaceChildren() {}, ownerDocument: doc },
+      signal: { aborted: false, addEventListener() {} },
+    },
+  }
+}
+
+test('pointer dissolution follows a projected subject point after responsive framing', async () => {
+  for (const viewport of [
+    { name: 'desktop', width: 1200, height: 900, left: 180, top: 120 },
+    { name: 'mobile', width: 390, height: 844, left: 60, top: 90 },
+  ]) {
+    const reducedMotion = { matches: true, addEventListener() {} }
+    const { context, listeners, browserWindow } = makeResponsiveContext(viewport, reducedMotion)
+    const parameters = {}
+    const asset = {
+      register() {},
+      registerParams(id, settings) { parameters[id] = settings },
+      subscribe() { return () => {} },
+    }
+    const result = createScene({ asset })
+    result.camera.aspect = viewport.width / viewport.height
+    result.camera.updateProjectionMatrix()
+    parameters.dataMotion.motionSpeed = 0
+    const play = await result.play(context)
+    try {
+      play.setProgress(1)
+      play.update(0)
+      reducedMotion.matches = false
+      play.update(1 / 60)
+      const particles = result.scene.getObjectByName('Particle Field')
+      const current = particles.geometry.attributes.position.array
+      const baseline = new Float32Array(current)
+      const universe = result.scene.getObjectByName('Data Universe')
+      result.scene.updateMatrixWorld(true)
+      result.camera.updateMatrixWorld(true)
+
+      let selectedIndex = 0
+      let bestScore = Infinity
+      for (let index = 0; index < particles.geometry.attributes.position.count; index += 1) {
+        const offset = index * 3
+        const x = baseline[offset], y = baseline[offset + 1], z = baseline[offset + 2]
+        if (Math.hypot(x, y) < 1) continue
+        const score = (x - 0.8) ** 2 + (y - 1.1) ** 2 + z * z * 200
+        if (score < bestScore) {
+          bestScore = score
+          selectedIndex = index
+        }
+      }
+      const selectedOffset = selectedIndex * 3
+      const worldPoint = new THREE.Vector3(
+        baseline[selectedOffset], baseline[selectedOffset + 1], baseline[selectedOffset + 2],
+      ).applyMatrix4(universe.matrixWorld)
+      const projectionCamera = result.camera.clone()
+      const ndc = new THREE.Vector2()
+      for (let iteration = 0; iteration < 16; iteration += 1) {
+        projectionCamera.position.set(ndc.x * 0.22, 0.2 + ndc.y * 0.14, result.camera.position.z)
+        projectionCamera.lookAt(0, 0, 0)
+        projectionCamera.updateMatrixWorld(true)
+        const projected = worldPoint.clone().project(projectionCamera)
+        ndc.set(projected.x, projected.y)
+      }
+      const clientX = viewport.left + (ndc.x + 1) * viewport.width / 2
+      const clientY = viewport.top + (1 - ndc.y) * viewport.height / 2
+      const legacyNdcX = (clientX / browserWindow.innerWidth - 0.5) * 2
+      const legacyNdcY = -(clientY / browserWindow.innerHeight - 0.5) * 2
+      const legacyDistance = Math.hypot(
+        baseline[selectedOffset] - legacyNdcX * 5.5,
+        baseline[selectedOffset + 1] - legacyNdcY * 3.8,
+      )
+      assert.ok(legacyDistance > 1.495, `${viewport.name}: projection must discriminate against the legacy local hit`)
+
+      listeners.pointermove({ pointerType: 'mouse', clientX, clientY })
+      play.update(1 / 60)
+      result.scene.updateMatrixWorld(true)
+      result.camera.updateMatrixWorld(true)
+      const projected = worldPoint.clone().project(result.camera)
+      const projectedX = viewport.left + (projected.x + 1) * viewport.width / 2
+      const projectedY = viewport.top + (1 - projected.y) * viewport.height / 2
+      assert.ok(Math.hypot(projectedX - clientX, projectedY - clientY) < 0.25, `${viewport.name}: projection setup did not converge`)
+
+      let changedCount = 0
+      let nearestDistance = Infinity
+      let totalWeight = 0
+      let weightedX = 0
+      let weightedY = 0
+      const affectedPoint = new THREE.Vector3()
+      for (let offset = 0; offset < current.length; offset += 3) {
+        const displacement = Math.hypot(
+          current[offset] - baseline[offset],
+          current[offset + 1] - baseline[offset + 1],
+          current[offset + 2] - baseline[offset + 2],
+        )
+        if (displacement <= 0.000001) continue
+        changedCount += 1
+        affectedPoint.set(baseline[offset], baseline[offset + 1], baseline[offset + 2]).applyMatrix4(universe.matrixWorld).project(result.camera)
+        const affectedX = viewport.left + (affectedPoint.x + 1) * viewport.width / 2
+        const affectedY = viewport.top + (1 - affectedPoint.y) * viewport.height / 2
+        nearestDistance = Math.min(nearestDistance, Math.hypot(affectedX - clientX, affectedY - clientY))
+        weightedX += affectedX * displacement
+        weightedY += affectedY * displacement
+        totalWeight += displacement
+      }
+      const centroidDistance = Math.hypot(weightedX / totalWeight - clientX, weightedY / totalWeight - clientY)
+      assert.ok(changedCount > 0, `${viewport.name}: projected subject neighborhood did not dissolve`)
+      assert.ok(nearestDistance < 5, `${viewport.name}: nearest dissolved particle was ${nearestDistance.toFixed(2)} px from the projected subject point`)
+      assert.ok(centroidDistance < 30, `${viewport.name}: dissolution centroid was ${centroidDistance.toFixed(2)} px from the projected subject point`)
+    } finally {
+      play.dispose()
+      result.dispose()
+    }
+  }
+})
+
+test('scroll measurement reuses static chapter frames until resize', async () => {
+  const reducedMotion = { matches: false, addEventListener() {} }
+  const viewport = { width: 1200, height: 900 }
+  const { context, listeners } = makeResponsiveContext(viewport, reducedMotion)
+  const result = createScene({ asset: makeAsset() })
+  const play = await result.play(context)
+  try {
+    const universe = result.scene.getObjectByName('Data Universe')
+    const initialScale = universe.scale.x
+    const initialY = universe.position.y
+    reducedMotion.matches = true
+    listeners.scroll()
+    play.update(0)
+    assert.equal(universe.scale.x, initialScale, 'scroll must not rebuild static chapter frames')
+    assert.equal(universe.position.y, initialY, 'scroll must preserve the initialized responsive frame')
+
+    result.camera.position.z = 20
+    listeners.resize()
+    play.update(0)
+    const expected = createChapterFrames(createShapeTargets(PARTICLE_COUNT), {
+      width: viewport.width,
+      height: viewport.height,
+      fov: result.camera.fov,
+      cameraZ: result.camera.position.z,
+    })[0]
+    assert.equal(universe.scale.x, expected.scale, 'resize must rebuild chapter scale')
+    assert.equal(universe.position.y, expected.y, 'resize must rebuild chapter position')
+  } finally {
+    play.dispose()
+    result.dispose()
+  }
+})
+
+test('Play reconciles a settled viewport when the final resize event is missing', async () => {
+  const reducedMotion = { matches: true, addEventListener() {} }
+  const viewport = { width: 1200, height: 900, embedded: false }
+  const { context, browserWindow } = makeResponsiveContext(viewport, reducedMotion)
+  const result = createScene({ asset: makeAsset() })
+  const play = await result.play(context)
+  try {
+    browserWindow.innerWidth = 390
+    browserWindow.innerHeight = 844
+    play.update(0)
+    const universe = result.scene.getObjectByName('Data Universe')
+    const expected = createChapterFrames(createShapeTargets(PARTICLE_COUNT), {
+      width: 390,
+      height: 844,
+      fov: result.camera.fov,
+      cameraZ: result.camera.position.z,
+      mobile: true,
+    })[0]
+    assert.equal(universe.scale.x, expected.scale, 'the settled mobile viewport must rebuild chapter scale')
+    assert.equal(universe.position.y, expected.y, 'the settled mobile viewport must rebuild chapter position')
+  } finally {
+    play.dispose()
+    result.dispose()
   }
 })

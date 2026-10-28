@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { SECTIONS } from './content.js'
 import { damp, getMorphFrame, progressFromOffsets, sampleMorph } from './morph.js'
 import { applyBoyMotion } from './boy-motion.js'
@@ -14,9 +15,17 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   const sections = doc && !embedded ? SECTIONS.map(({ id }) => doc.getElementById(id)).filter(Boolean) : []
   const positions = particles.geometry.attributes.position
   const pointer = { x: 0, y: 0, active: false }
+  const pointerNdc = new THREE.Vector2()
+  const pointerRaycaster = new THREE.Raycaster()
+  const pointerPlane = new THREE.Plane()
+  const pointerPlaneNormal = new THREE.Vector3()
+  const pointerPlanePoint = new THREE.Vector3()
+  const pointerWorldHit = new THREE.Vector3()
+  const pointerLocalHit = new THREE.Vector3()
   let pointerStrength = 0
   let offsets = []
   let chapterFrames = []
+  const frameViewport = { width: 0, height: 0, fov: 0, cameraZ: 0, mobile: null }
   let framingInitialized = false
   let progress = 0
   let targetProgress = 0
@@ -28,20 +37,43 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   let hint
   const buttons = []
 
-  function measure() {
+  function measureFrames() {
     const width = browserWindow?.innerWidth || container.clientWidth || 1440
     const height = browserWindow?.innerHeight || container.clientHeight || 900
+    const mobile = !embedded && width <= 760
     chapterFrames = createChapterFrames(targets, {
       width,
       height,
       fov: camera.fov,
       cameraZ: camera.position.z,
-      mobile: !embedded && width <= 760,
+      mobile,
     })
+    frameViewport.width = width
+    frameViewport.height = height
+    frameViewport.fov = camera.fov
+    frameViewport.cameraZ = camera.position.z
+    frameViewport.mobile = mobile
+  }
+
+  function ensureFrames() {
+    const width = browserWindow?.innerWidth || container.clientWidth || 1440
+    const height = browserWindow?.innerHeight || container.clientHeight || 900
+    const mobile = !embedded && width <= 760
+    if (chapterFrames.length !== 4 || width !== frameViewport.width || height !== frameViewport.height || mobile !== frameViewport.mobile || camera.fov !== frameViewport.fov || camera.position.z !== frameViewport.cameraZ) {
+      measureFrames()
+    }
+  }
+
+  function measure() {
     if (!browserWindow || sections.length !== SECTIONS.length) return
     offsets = sections.map((section) => section.offsetTop)
     const measured = progressFromOffsets(offsets, browserWindow.scrollY)
     targetProgress = reducedMotion.matches ? Math.round(measured) : measured
+  }
+
+  function onResize() {
+    measureFrames()
+    measure()
   }
 
   function updateControls() {
@@ -86,8 +118,13 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
 
   function onPointerMove(event) {
     if (!browserWindow || event.pointerType === 'touch') return
-    pointer.x = (event.clientX / browserWindow.innerWidth - 0.5) * 2
-    pointer.y = -(event.clientY / browserWindow.innerHeight - 0.5) * 2
+    const bounds = canvas.getBoundingClientRect()
+    if (bounds.width <= 0 || bounds.height <= 0) {
+      pointer.active = false
+      return
+    }
+    pointer.x = (event.clientX - bounds.left) / bounds.width * 2 - 1
+    pointer.y = -((event.clientY - bounds.top) / bounds.height * 2 - 1)
     pointer.active = true
   }
 
@@ -125,7 +162,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
 
   if (browserWindow) {
     browserWindow.addEventListener('scroll', measure, { signal, passive: true })
-    browserWindow.addEventListener('resize', measure, { signal, passive: true })
+    browserWindow.addEventListener('resize', onResize, { signal, passive: true })
     browserWindow.addEventListener('keydown', onKeydown, { signal })
     browserWindow.addEventListener('pointermove', onPointerMove, { signal, passive: true })
     browserWindow.addEventListener('pointerleave', onPointerLeave, { signal })
@@ -142,6 +179,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
       }
     }, { signal })
     canvas.addEventListener('pointerdown', () => canvas.focus(), { signal })
+    measureFrames()
     measure()
     progress = targetProgress
   }
@@ -163,6 +201,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
       pointerStrength = damp(pointerStrength, pointer.active ? 1 : 0, 8, safeDt)
       if (!pointer.active && pointerStrength < 0.0001) pointerStrength = 0
     }
+    ensureFrames()
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
     const morphFrame = getMorphFrame(progress)
     sampleMorph(targets, morphFrame, positions.array, phases)
@@ -189,8 +228,29 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     const skillAngle = emphasisKind === 'skill' ? skillWeight * 0.35 : 0
     const skillCos = Math.cos(skillAngle), skillSin = Math.sin(skillAngle)
     const flow = reducedMotion.matches ? 0 : settings.flowIntensity
-    const pointerX = pointer.x * 5.5
-    const pointerY = pointer.y * 3.8
+    universe.rotation.y = time * 0.06 * (1 - boyWeight - mapWeight) + Math.sin(time * 0.35) * 0.08 * mapWeight + (emphasisKind === 'experience' ? emphasisIndex * 0.08 : 0)
+    universe.rotation.x = Math.sin(time * 0.22) * 0.025 * (1 - boyWeight)
+    dust.rotation.y = time * 0.008
+    camera.position.x = pointer.active && !reducedMotion.matches ? pointer.x * 0.22 : 0
+    camera.position.y = 0.2 + (pointer.active && !reducedMotion.matches ? pointer.y * 0.14 : 0)
+    camera.lookAt(0, 0, 0)
+    universe.updateMatrixWorld(true)
+    camera.updateMatrixWorld(true)
+
+    let hasPointerHit = false
+    if (pointerStrength > 0) {
+      pointerNdc.set(pointer.x, pointer.y)
+      pointerRaycaster.setFromCamera(pointerNdc, camera)
+      pointerPlaneNormal.set(0, 0, 1).transformDirection(universe.matrixWorld)
+      pointerPlanePoint.set(0, 0, 0).applyMatrix4(universe.matrixWorld)
+      pointerPlane.setFromNormalAndCoplanarPoint(pointerPlaneNormal, pointerPlanePoint)
+      if (pointerRaycaster.ray.intersectPlane(pointerPlane, pointerWorldHit)) {
+        pointerLocalHit.copy(pointerWorldHit)
+        universe.worldToLocal(pointerLocalHit)
+        hasPointerHit = true
+      }
+    }
+
     const dissolveRadius = 1.25 + settings.flowIntensity * 0.35
     for (let index = 0; index < positions.count; index += 1) {
       const offset = index * 3
@@ -204,8 +264,8 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
         y += Math.sin(time * 0.9 + index * 0.017) * 0.018 * flow
         z += Math.cos(time * 0.7 + index * 0.013) * 0.018 * flow
       }
-      if (pointerStrength > 0) {
-        const dx = x - pointerX, dy = y - pointerY
+      if (hasPointerHit) {
+        const dx = x - pointerLocalHit.x, dy = y - pointerLocalHit.y
         const distanceSquared = dx * dx + dy * dy + z * z * 0.08
         if (distanceSquared < dissolveRadius * dissolveRadius && distanceSquared > 0.0001) {
           const distance = Math.sqrt(distanceSquared)
@@ -221,16 +281,9 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     particles.material.opacity = emphasisKind === 'experience' && mapWeight > 0 && !reducedMotion.matches
       ? 0.9 + (Math.sin(time * 3) + 1) * 0.04 * mapWeight
       : 0.94
-
-    universe.rotation.y = time * 0.06 * (1 - boyWeight - mapWeight) + Math.sin(time * 0.35) * 0.08 * mapWeight + (emphasisKind === 'experience' ? emphasisIndex * 0.08 : 0)
-    universe.rotation.x = Math.sin(time * 0.22) * 0.025 * (1 - boyWeight)
-    dust.rotation.y = time * 0.008
-    camera.position.x = pointer.active && !reducedMotion.matches ? pointer.x * 0.22 : 0
-    camera.position.y = 0.2 + (pointer.active && !reducedMotion.matches ? pointer.y * 0.14 : 0)
-    camera.lookAt(0, 0, 0)
   }
 
-  if (chapterFrames.length !== 4) measure()
+  ensureFrames()
   update(0)
   return {
     update,

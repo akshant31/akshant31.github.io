@@ -82,3 +82,28 @@ test('hero name stays top centered in base and mobile rules', () => {
   assert.equal((html.match(/<h1\b/g) || []).length, 1)
   assert.ok(html.includes('<h1 class="hero-name" id="hero-title"><span>Akshant</span><span>Kumar</span></h1>'))
 })
+
+test('compact chapter navigation keeps meaningful accessible names', () => {
+  const navigation = html.match(/<nav class="section-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || ''
+  const links = [...navigation.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)].map((match) => match[0])
+  assert.equal(links.length, 4)
+  const accessibleNames = links.map((link) => link.match(/aria-label="([^"]+)"/)?.[1])
+  assert.deepEqual(accessibleNames, ['Boy chapter', 'India chapter', 'Skills chapter', 'Contact chapter'])
+})
+
+test('faint text token meets WCAG AA contrast on the base background', () => {
+  const readColor = (token) => {
+    const value = css.match(new RegExp(`--${token}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1]
+    assert.ok(value, `missing color token: ${token}`)
+    return value
+  }
+  const luminance = (hex) => {
+    const channels = hex.slice(1).match(/.{2}/g).map((channel) => parseInt(channel, 16) / 255)
+    const [red, green, blue] = channels.map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    return red * 0.2126 + green * 0.7152 + blue * 0.0722
+  }
+  const foreground = luminance(readColor('faint'))
+  const background = luminance(readColor('background'))
+  const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05)
+  assert.ok(contrast >= 4.5, `--faint contrast ${contrast.toFixed(3)}:1 must meet WCAG AA`)
+})

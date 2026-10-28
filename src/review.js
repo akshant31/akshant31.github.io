@@ -17,14 +17,14 @@ export default {
       evidence: '2026-10-27 actual 390 × 844 mobile capture review: the top-centered name, bottom-anchored portrait, north-up India, constellation, and portal remained readable with zero horizontal overflow. The hero torso crossed the bottom by 39.66 px with 151.64 px heading clearance; Skills occupied 366.59 × 292.06 px and all essential controls were reachable.',
     },
     {
-      name: 'Navigation, selections, damped pointer restoration, and contact links',
+      name: 'Navigation, selections, accessible names, and projected pointer restoration',
       status: 'passed',
-      evidence: 'Real-browser checks passed for native scrolling, all four header links, shortcuts 1–4, all arrow-key directions, every skill category, and every experience row. Pointer input changed 12,765 coordinates. Ten successive post-leave frames remained nonzero and decreased: RMS displacement fell from 0.016394712 to 0.001942856 with successive ratios 0.7655–0.8756, while maximum displacement fell from 0.140829697 to 0.016689032. After the 2,000 ms settling tail, changed coordinates, RMS, and maximum delta were all exactly zero. Email and GitHub hrefs remained mailto:akst31@yahoo.com and https://github.com/akshant31 without inspection navigating away.',
+      evidence: 'Real-browser checks passed for native scrolling, all four header links, shortcuts 1–4, all arrow-key directions, every skill category, every experience row, and exact contact hrefs. The 2026-10-28 targeted review exposed Boy chapter, India chapter, Skills chapter, and Contact chapter in the mobile accessibility tree; native wheel input advanced scrollY from 0 to 700 and all compact links navigated without overflow. Projected India dissolution changed 3,542 desktop particles and 3,512 mobile particles. The nearest affected particle was 0.417 px from the desktop target and 0.635 px from the mobile target; weighted centroids were 19.217 px and 11.098 px away. Eight successive post-leave frames decreased and the 2,000 ms settling tail ended with exactly zero changed coordinates and zero maximum delta at both sizes.',
     },
     {
-      name: 'Reduced motion and WebGL-disabled fallback',
+      name: 'Contrast, responsive frame measurement, reduced motion, and fallback',
       status: 'passed',
-      evidence: 'At all four chapters, reduced motion produced exact target buffers and chapter frames with zero position differences and static rig, camera, and ambient rotation. With WebGL disabled, all four semantic chapters and contact links remained readable with zero overflow and Static portfolio mode.',
+      evidence: 'Computed experience/footer color #71808c on actual background #05070b has 4.9617:1 WCAG relative-luminance contrast. Scroll events now measure progress without rebuilding target bounds; initialization, resize, and changed viewport/camera inputs rebuild static frames. A targeted transient-resize review settled correctly at 390 × 844. Across all four chapters at both 1440 × 900 and 390 × 844, reduced motion produced exact target buffers and chapter frames with zero position differences and static rig, camera, and ambient rotation. The earlier WebGL-disabled review kept all four semantic chapters and contact links readable with zero overflow and Static portfolio mode.',
     },
     {
       name: 'Editable root scene and Play controls',
@@ -34,7 +34,7 @@ export default {
     {
       name: 'Automated regression and production gate',
       status: 'passed',
-      evidence: 'Final gate: npm test passed 45 of 45 tests; Edit3D compile check and production build passed; git diff --check passed.',
+      evidence: 'Final gate: npm test passed 50 of 50 tests; Edit3D compile check and production build passed; git diff --check passed.',
     },
   ],
   limitations: [

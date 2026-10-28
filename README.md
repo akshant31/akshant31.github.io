@@ -40,11 +40,12 @@ npm test && npm run check && npm run build && git diff --check
 
 ### Verification on this branch
 
-- All 45 Node regression tests pass, covering deterministic morphs, content, responsive framing, half-body geometry, India geometry, playback, damped pointer return, reduced motion, and website routing.
+- All 50 Node regression tests pass, covering deterministic morphs, content, responsive framing, half-body geometry, India geometry, projected pointer dissolution, damped pointer return, accessible chapter names, WCAG contrast, scroll/resize measurement, missed-resize reconciliation, reduced motion, and website routing.
 - The Edit3D compile check and production build pass. Non-fatal SDK decoder-asset and large-chunk warnings may remain.
 - All four chapters were captured and visually reviewed at 1440 × 900 and 390 × 844. The review found no horizontal overflow or blocked essential controls.
 - Same-viewport baseline/current desktop measurements show India at 496.81 × 523.15 → 632.40 × 726.01 px (1.7665× area), Skills at 648.48 × 515.59 → 927.38 × 745.25 px (2.0671× area), and Contact at 645.47 × 778.74 → 745.09 × 838.86 px (1.2435× area). Native-resolution pixel review confirmed the enlargement and cleaned India outline.
-- Real-browser checks cover native scrolling, all navigation links, keys `1`–`4`, arrow keys, every skill and experience selection, contact links, reduced motion, and the no-WebGL fallback. Pointer review records ten nonzero, strictly decreasing post-leave frames (RMS ratios 0.7655–0.8756) followed by exact restoration after the settling tail.
+- Real-browser checks cover native scrolling, all navigation links, keys `1`–`4`, arrow keys, every skill and experience selection, contact links, reduced motion, and the no-WebGL fallback. The targeted final-fix review also confirmed compact-link accessibility-tree names, 4.9617:1 faint-text contrast, projected pointer alignment at desktop/mobile sizes, and eight decreasing post-leave frames followed by exact restoration.
+- Reduced-motion review produced exact targets, exact responsive frames, and static rig/camera/ambient state at all four chapters at both desktop and mobile sizes. Scroll measurement leaves static bounds unchanged, while resize and actual viewport/camera changes rebuild them.
 - Editable-scene checks cover registered objects and parameter groups, live particle-size and palette changes, and motion control through actual Play-canvas pixels. Native desktop toolbar and IPC integration were not exercised.
 
 Measured evidence is recorded in `src/review.js`. Review captures and machine-check output remain ignored under `.superpowers/sdd/final-review/`.
