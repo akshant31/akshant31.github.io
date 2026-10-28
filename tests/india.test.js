@@ -57,3 +57,15 @@ test('India target and outline allocation are deterministic in the aggregate', (
   assert.deepEqual(a.targets[1], b.targets[1])
   assert.notDeepEqual(a.targets[0], a.targets[1])
 })
+
+test('northern Ladakh reaches the reviewed outer PDF stroke without changing the map contract', () => {
+  const trace = readFileSync(new URL('../docs/reference/india-mainland-trace.svg', import.meta.url), 'utf8')
+  const points = [...trace.matchAll(/[ML] (\d+) (\d+)/g)].map((match) => [Number(match[1]), Number(match[2])])
+  const northern = points.filter(([x, y]) => x >= 500 && x <= 1230 && y <= 820)
+  const ladakhEdge = points.filter(([x, y]) => x >= 1150 && x <= 1220 && y >= 540 && y <= 660)
+  assert.ok(Math.min(...northern.map((point) => point[1])) <= 350, 'northern edge remains trimmed')
+  assert.ok(Math.max(...ladakhEdge.map((point) => point[0])) >= 1210, 'right Ladakh edge remains trimmed')
+  assert.ok(trace.includes('viewBox="0 0 2807 3974"'))
+  assert.equal((trace.match(/id="india-mainland"/g) || []).length, 1)
+  assert.ok(Math.max(...mainRing.map((point) => point[0])) >= 3.51, 'far-northeastern extent regressed')
+})
