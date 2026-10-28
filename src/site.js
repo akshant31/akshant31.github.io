@@ -1,4 +1,5 @@
 import { SECTIONS } from './content.js'
+import { initCometCursor } from './comet-cursor.js'
 import { initTheme } from './theme.js'
 import { initTextMotion } from './text-motion.js'
 
@@ -7,6 +8,7 @@ export function initSite({ onSection, onEmphasis } = {}) {
   const { signal } = controller
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const theme = initTheme()
+  const cometCursor = initCometCursor()
   const sections = SECTIONS.map(({ id }) => document.getElementById(id))
   const navLinks = [...document.querySelectorAll('[data-nav-link]')]
   const skillPanels = [...document.querySelectorAll('[data-skill-tools]')]
@@ -96,6 +98,7 @@ export function initSite({ onSection, onEmphasis } = {}) {
     dispose() {
       observer.disconnect()
       controller.abort()
+      cometCursor.dispose()
       textMotion.dispose()
       theme.dispose()
       document.documentElement.classList.remove('js')

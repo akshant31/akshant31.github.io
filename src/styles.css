@@ -211,3 +211,7 @@ html[data-webgl="unavailable"] body { background-image: linear-gradient(rgba(0, 
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+.comet-cursor { position: fixed; inset: 0; z-index: 90; width: 100vw; height: 100vh; pointer-events: none; }
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html.comet-cursor-active body, html.comet-cursor-active a, html.comet-cursor-active button, html.comet-cursor-active canvas { cursor: none; }
+}
