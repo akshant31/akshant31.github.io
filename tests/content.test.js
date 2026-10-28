@@ -80,7 +80,7 @@ test('hero name stays top centered in base and mobile rules', () => {
     assert.doesNotMatch(rule, /bottom:/)
   }
   assert.equal((html.match(/<h1\b/g) || []).length, 1)
-  assert.ok(html.includes('<h1 class="hero-name" id="hero-title"><span>Akshant</span><span>Kumar</span></h1>'))
+  assert.ok(html.includes('<h1 class="hero-name" id="hero-title" data-reveal><span>Akshant</span><span>Kumar</span></h1>'))
 })
 
 test('compact chapter navigation keeps meaningful accessible names', () => {
@@ -91,21 +91,39 @@ test('compact chapter navigation keeps meaningful accessible names', () => {
   assert.deepEqual(accessibleNames, ['Boy chapter', 'India chapter', 'Skills chapter', 'Contact chapter'])
 })
 
-test('faint text token meets WCAG AA contrast on the base background', () => {
-  const readColor = (token) => {
-    const value = css.match(new RegExp(`--${token}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1]
-    assert.ok(value, `missing color token: ${token}`)
-    return value
-  }
+test('display fonts, restrained accents, and reveal markup preserve readable content', () => {
+  assert.match(html, /family=Bodoni\+Moda/)
+  assert.match(html, /family=Caveat/)
+  assert.equal((html.match(/class="accent-word"/g) || []).length, 2)
+  const revealElements = html.match(/<[^>]*data-reveal[^>]*>/g) || []
+  assert.ok(revealElements.length > 0, 'missing reveal markup')
+  for (const element of revealElements) assert.doesNotMatch(element, /\shidden(?:\s|=|>)/)
+})
+
+test('theme text tokens meet WCAG contrast contracts', () => {
+  const themeBlocks = [
+    ['root', css.match(/:root\s*\{([^}]*)\}/)?.[1]],
+    ['light', css.match(/:root\[data-theme='light'\]\s*\{([^}]*)\}/)?.[1]],
+  ]
   const luminance = (hex) => {
     const channels = hex.slice(1).match(/.{2}/g).map((channel) => parseInt(channel, 16) / 255)
     const [red, green, blue] = channels.map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
     return red * 0.2126 + green * 0.7152 + blue * 0.0722
   }
-  const foreground = luminance(readColor('faint'))
-  const background = luminance(readColor('background'))
-  const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05)
-  assert.ok(contrast >= 4.5, `--faint contrast ${contrast.toFixed(3)}:1 must meet WCAG AA`)
+  for (const [theme, block] of themeBlocks) {
+    assert.ok(block, `missing ${theme} theme block`)
+    const readColor = (token) => {
+      const value = block.match(new RegExp(`--${token}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1]
+      assert.ok(value, `missing ${theme} color token: ${token}`)
+      return value
+    }
+    const background = luminance(readColor('background'))
+    for (const [token, minimum] of Object.entries({ text: 4.5, muted: 4.5, faint: 4.5, cyan: 4.5, violet: 3 })) {
+      const foreground = luminance(readColor(token))
+      const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05)
+      assert.ok(contrast >= minimum, `${theme} --${token} contrast ${contrast.toFixed(3)}:1 must meet ${minimum}:1`)
+    }
+  }
 })
 
 test('theme control starts accessible and light theme tokens are defined', () => {

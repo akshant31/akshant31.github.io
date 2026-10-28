@@ -1,5 +1,6 @@
 import { SECTIONS } from './content.js'
 import { initTheme } from './theme.js'
+import { initTextMotion } from './text-motion.js'
 
 export function initSite({ onSection, onEmphasis } = {}) {
   const controller = new AbortController()
@@ -88,12 +89,14 @@ export function initSite({ onSection, onEmphasis } = {}) {
   const year = document.getElementById('current-year')
   if (year) year.textContent = String(new Date().getFullYear())
   setActive(0)
+  const textMotion = initTextMotion()
 
   return {
     goTo,
     dispose() {
       observer.disconnect()
       controller.abort()
+      textMotion.dispose()
       theme.dispose()
       document.documentElement.classList.remove('js')
       for (const panel of skillPanels) panel.hidden = false
