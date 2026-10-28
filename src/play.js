@@ -14,6 +14,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   const sections = doc && !embedded ? SECTIONS.map(({ id }) => doc.getElementById(id)).filter(Boolean) : []
   const positions = particles.geometry.attributes.position
   const pointer = { x: 0, y: 0, active: false }
+  let pointerStrength = 0
   let offsets = []
   let chapterFrames = []
   let framingInitialized = false
@@ -156,6 +157,12 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
       resumeWithZeroDelta = false
     }
     if (!reducedMotion.matches) time += safeDt * settings.motionSpeed
+    if (reducedMotion.matches) {
+      pointerStrength = 0
+    } else {
+      pointerStrength = damp(pointerStrength, pointer.active ? 1 : 0, 8, safeDt)
+      if (!pointer.active && pointerStrength < 0.0001) pointerStrength = 0
+    }
     progress = reducedMotion.matches ? targetProgress : damp(progress, targetProgress, 4.2, safeDt)
     const morphFrame = getMorphFrame(progress)
     sampleMorph(targets, morphFrame, positions.array, phases)
@@ -197,12 +204,12 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
         y += Math.sin(time * 0.9 + index * 0.017) * 0.018 * flow
         z += Math.cos(time * 0.7 + index * 0.013) * 0.018 * flow
       }
-      if (pointer.active && !reducedMotion.matches) {
+      if (pointerStrength > 0) {
         const dx = x - pointerX, dy = y - pointerY
         const distanceSquared = dx * dx + dy * dy + z * z * 0.08
         if (distanceSquared < dissolveRadius * dissolveRadius && distanceSquared > 0.0001) {
           const distance = Math.sqrt(distanceSquared)
-          const strength = (1 - distance / dissolveRadius) * settings.flowIntensity * 0.55
+          const strength = (1 - distance / dissolveRadius) * settings.flowIntensity * 0.55 * pointerStrength
           x += dx / distance * strength
           y += dy / distance * strength
           z += strength * 0.35

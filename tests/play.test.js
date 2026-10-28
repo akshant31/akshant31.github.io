@@ -184,3 +184,83 @@ test('Play applies the responsive hero frame on its first update', async () => {
   play.dispose()
   result.dispose()
 })
+
+test('pointer leave damps dissolution through successive frames before exact restoration', async () => {
+  function makePointerContext() {
+    const listeners = {}
+    const reducedMotion = { matches: false, addEventListener() {} }
+    const browserWindow = {
+      matchMedia: () => reducedMotion,
+      addEventListener(type, listener) { listeners[type] = listener },
+      innerWidth: 1200,
+      innerHeight: 900,
+      scrollY: 0,
+    }
+    const doc = {
+      hidden: false,
+      body: { classList: { contains: () => true } },
+      defaultView: browserWindow,
+      createElement: () => ({ setAttribute() {}, addEventListener() {}, append() {}, remove() {} }),
+      addEventListener() {},
+    }
+    return {
+      context: {
+        canvas: { addEventListener() {}, focus() {} },
+        container: { append() {}, replaceChildren() {}, ownerDocument: doc },
+        signal: { aborted: false, addEventListener() {} },
+      },
+      listeners,
+    }
+  }
+
+  const pointerScene = createScene({ asset: makeAsset() })
+  const referenceScene = createScene({ asset: makeAsset() })
+  const pointerContext = makePointerContext()
+  const referenceContext = makePointerContext()
+  const pointerPlay = await pointerScene.play(pointerContext.context)
+  const referencePlay = await referenceScene.play(referenceContext.context)
+  const pointerPositions = pointerScene.scene.getObjectByName('Particle Field').geometry.attributes.position.array
+  const referencePositions = referenceScene.scene.getObjectByName('Particle Field').geometry.attributes.position.array
+  const advanceBoth = (dt) => {
+    pointerPlay.update(dt)
+    referencePlay.update(dt)
+  }
+  const difference = () => {
+    let changed = 0
+    let maxDelta = 0
+    let squaredDelta = 0
+    for (let index = 0; index < pointerPositions.length; index += 1) {
+      const delta = Math.abs(pointerPositions[index] - referencePositions[index])
+      if (delta > 0) changed += 1
+      maxDelta = Math.max(maxDelta, delta)
+      squaredDelta += delta * delta
+    }
+    return { changed, maxDelta, rmsDelta: Math.sqrt(squaredDelta / pointerPositions.length) }
+  }
+
+  try {
+    advanceBoth(0)
+    assert.ok(pointerPositions.every((value, index) => value === referencePositions[index]))
+    pointerContext.listeners.pointermove({ pointerType: 'mouse', clientX: 600, clientY: 450 })
+    advanceBoth(1 / 60)
+    assert.ok(difference().changed > 0)
+    pointerContext.listeners.pointerleave({ pointerType: 'mouse' })
+
+    const returnFrames = []
+    for (let frame = 0; frame < 8; frame += 1) {
+      advanceBoth(1 / 60)
+      returnFrames.push(difference())
+    }
+    assert.ok(returnFrames.every((frame) => frame.changed > 0 && frame.rmsDelta > 0), JSON.stringify(returnFrames))
+    const ratios = returnFrames.slice(1).map((frame, index) => frame.rmsDelta / returnFrames[index].rmsDelta)
+    assert.ok(ratios.every((ratio) => ratio > 0.5 && ratio < 1), JSON.stringify({ returnFrames, ratios }))
+
+    for (let frame = 0; frame < 180; frame += 1) advanceBoth(1 / 60)
+    assert.ok(pointerPositions.every((value, index) => value === referencePositions[index]), 'pointer influence must settle to exact zero')
+  } finally {
+    pointerPlay.dispose()
+    referencePlay.dispose()
+    pointerScene.dispose()
+    referenceScene.dispose()
+  }
+})

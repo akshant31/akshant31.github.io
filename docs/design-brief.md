@@ -34,7 +34,7 @@ The reproducible workflow is manual SVG trace → `python scripts/prepare-india-
 
 - Native scrolling and four direct header links select chapters without scroll hijacking.
 - Keys `1`–`4` select chapters directly; adjacent arrow keys move forward and backward.
-- Pointer movement produces local dissolution and restoration without carrying essential content in the canvas.
+- Pointer movement produces local dissolution and damped restoration without carrying essential content in the canvas.
 - Every skill category reveals only its selected tool panel; every experience entry exposes a reachable selection control and scene emphasis.
 - Reduced motion freezes idle rigging, pointer scattering, parallax, ambient motion, and eased travel at exact chapter frames.
 - With WebGL unavailable, all four semantic chapters, navigation, and contact links remain readable in static portfolio mode.
@@ -59,6 +59,6 @@ Professional content remains sourced from the existing portfolio. The half-body 
 
 ## Review and delivery
 
-`src/review.js` records measured evidence from actual desktop and mobile captures, interaction and reduced-motion checks, WebGL-disabled fallback, editable-scene controls, and the complete automated gate. Review scratch stays ignored under `.superpowers/sdd/final-review/`.
+`src/review.js` records measured evidence from actual desktop and mobile captures, same-viewport pre-revision/current chapter comparisons, ten intermediate post-leave pointer frames and exact restoration, reduced-motion checks, WebGL-disabled fallback, editable-scene controls, and the complete automated gate. Review scratch stays ignored under `.superpowers/sdd/final-review/`.
 
 Delivery stays on `feature/3d-data-portfolio`; no production merge or deployment is part of this work.

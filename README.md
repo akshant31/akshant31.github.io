@@ -40,10 +40,11 @@ npm test && npm run check && npm run build && git diff --check
 
 ### Verification on this branch
 
-- All 44 Node regression tests pass, covering deterministic morphs, content, responsive framing, half-body geometry, India geometry, playback, reduced motion, and website routing.
+- All 45 Node regression tests pass, covering deterministic morphs, content, responsive framing, half-body geometry, India geometry, playback, damped pointer return, reduced motion, and website routing.
 - The Edit3D compile check and production build pass. Non-fatal SDK decoder-asset and large-chunk warnings may remain.
 - All four chapters were captured and visually reviewed at 1440 × 900 and 390 × 844. The review found no horizontal overflow or blocked essential controls.
-- Real-browser checks cover native scrolling, all navigation links, keys `1`–`4`, arrow keys, every skill and experience selection, pointer displacement and settled restoration, contact links, reduced motion, and the no-WebGL fallback.
+- Same-viewport baseline/current desktop measurements show India at 496.81 × 523.15 → 632.40 × 726.01 px (1.7665× area), Skills at 648.48 × 515.59 → 927.38 × 745.25 px (2.0671× area), and Contact at 645.47 × 778.74 → 745.09 × 838.86 px (1.2435× area). Native-resolution pixel review confirmed the enlargement and cleaned India outline.
+- Real-browser checks cover native scrolling, all navigation links, keys `1`–`4`, arrow keys, every skill and experience selection, contact links, reduced motion, and the no-WebGL fallback. Pointer review records ten nonzero, strictly decreasing post-leave frames (RMS ratios 0.7655–0.8756) followed by exact restoration after the settling tail.
 - Editable-scene checks cover registered objects and parameter groups, live particle-size and palette changes, and motion control through actual Play-canvas pixels. Native desktop toolbar and IPC integration were not exercised.
 
 Measured evidence is recorded in `src/review.js`. Review captures and machine-check output remain ignored under `.superpowers/sdd/final-review/`.
@@ -52,7 +53,7 @@ Measured evidence is recorded in `src/review.js`. Review captures and machine-ch
 
 - Scroll or use the four header links to move between chapters.
 - Use keys `1`–`4` for direct chapter selection and adjacent arrow keys to move forward or backward.
-- Move the pointer over the scene for local particle dissolution and restoration.
+- Move the pointer over the scene for local particle dissolution and damped restoration.
 - Select skill groups and experience entries to change the active panel and scene emphasis.
 - In embedded Edit3D Play, use the four chapter controls or keys `1`–`4`.
 - Semantic HTML, keyboard focus, responsive layouts, reduced-motion behavior, and a no-WebGL fallback keep the portfolio readable.
