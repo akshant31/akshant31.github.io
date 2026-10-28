@@ -99,7 +99,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
   function setEmphasis(detail = {}) {
     emphasisKind = detail.kind || null
     emphasisIndex = Number.isInteger(detail.index) ? detail.index : 0
-    particles.material.color.set(emphasisKind ? '#E9FBFF' : '#FFFFFF')
+    particles.material.color.set(particles.userData.theme === 'light' ? '#FFFFFF' : emphasisKind ? '#E9FBFF' : '#FFFFFF')
   }
 
   function onKeydown(event) {
@@ -140,6 +140,8 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     setEmphasis(event.detail)
   }
 
+  function onTheme(event) { objects.setTheme?.(event.detail?.theme) }
+
   if (doc) {
     hint = doc.createElement('div')
     hint.className = 'scene-play-hint'
@@ -168,6 +170,7 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
     browserWindow.addEventListener('pointerleave', onPointerLeave, { signal })
     browserWindow.addEventListener('portfolio:section', onSection, { signal })
     browserWindow.addEventListener('portfolio:emphasis', onEmphasis, { signal })
+    browserWindow.addEventListener('portfolio:theme', onTheme, { signal })
     doc?.addEventListener?.('visibilitychange', () => {
       pointer.active = false
       resumeWithZeroDelta = true
@@ -278,9 +281,10 @@ export function playPortfolio({ canvas, container, signal }, objects, settings) 
       positions.array[offset] = x; positions.array[offset + 1] = y; positions.array[offset + 2] = z
     }
     positions.needsUpdate = true
+    const baseOpacity = particles.userData.baseOpacity ?? 0.94
     particles.material.opacity = emphasisKind === 'experience' && mapWeight > 0 && !reducedMotion.matches
-      ? 0.9 + (Math.sin(time * 3) + 1) * 0.04 * mapWeight
-      : 0.94
+      ? baseOpacity - 0.04 + (Math.sin(time * 3) + 1) * 0.04 * mapWeight
+      : baseOpacity
   }
 
   ensureFrames()

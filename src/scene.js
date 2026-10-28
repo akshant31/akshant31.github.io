@@ -42,7 +42,7 @@ function createAmbientDust(sprite) {
   return dust
 }
 
-export function createScene({ asset }) {
+export function createScene({ asset, theme = globalThis.document?.documentElement?.dataset?.theme || 'dark' }) {
   enableToneMapping({ curve: 'aces' })
   const scene = new THREE.Scene()
   scene.background = new THREE.Color('#05070B')
@@ -88,16 +88,36 @@ export function createScene({ asset }) {
   const baseColor = new THREE.Color('#E4EBF0')
   const cyanColor = new THREE.Color()
   const violetColor = new THREE.Color()
+  const coralColor = new THREE.Color('#C64A33')
+  const goldColor = new THREE.Color('#A66A00')
+  let activeTheme = theme === 'light' ? 'light' : 'dark'
   function applyParams() {
+    const light = activeTheme === 'light'
     particleMaterial.size = settings.particleSize
     particleMaterial.color.set('#FFFFFF')
+    particleMaterial.blending = light ? THREE.NormalBlending : THREE.AdditiveBlending
+    particleMaterial.opacity = light ? 0.88 : 0.94
+    particleMaterial.needsUpdate = true
+    particles.userData.theme = activeTheme
+    particles.userData.baseOpacity = particleMaterial.opacity
+    dust.material.blending = particleMaterial.blending
+    dust.material.color.set(light ? '#657780' : '#6B8798')
+    dust.material.opacity = light ? 0.30 : 0.22
+    dust.material.needsUpdate = true
+    scene.background.set(light ? '#F6F3EC' : '#05070B')
+    baseColor.set(light ? '#344250' : '#E4EBF0')
     cyanColor.set(settings.cyan)
     violetColor.set(settings.violet)
+    if (light) { cyanColor.multiplyScalar(0.50); violetColor.multiplyScalar(0.65) }
     const colors = particleGeometry.attributes.color
     for (let index = 0; index < PARTICLE_COUNT; index += 1) {
       let color
-      if (index < subject.indiaOutlineCount) color = index % 5 === 0 ? cyanColor : baseColor
-      else {
+      if (light) {
+        const band = index % 20
+        color = band < 6 ? baseColor : band < 10 ? cyanColor : band < 14 ? violetColor : band < 18 ? coralColor : goldColor
+      } else if (index < subject.indiaOutlineCount) {
+        color = index % 5 === 0 ? cyanColor : baseColor
+      } else {
         const band = index % 17
         color = band < 10 ? baseColor : band < 14 ? cyanColor : violetColor
       }
@@ -105,16 +125,21 @@ export function createScene({ asset }) {
     }
     colors.needsUpdate = true
   }
+  function setTheme(nextTheme) {
+    activeTheme = nextTheme === 'light' ? 'light' : 'dark'
+    applyParams()
+  }
   const unsubscribe = asset.subscribe(({ type }) => { if (type === 'change') applyParams() })
   applyParams()
 
   return {
     scene,
     camera,
+    setTheme,
     play: async (context) => {
       const { playPortfolio } = await import('./play.js')
       return playPortfolio(context, {
-        universe, particles, dust, camera,
+        universe, particles, dust, camera, setTheme,
         targets: subject.targets,
         boyRegions: subject.boyRegions,
         indiaOutlineCount: subject.indiaOutlineCount,
