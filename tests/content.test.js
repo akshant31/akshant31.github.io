@@ -107,3 +107,10 @@ test('faint text token meets WCAG AA contrast on the base background', () => {
   const contrast = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05)
   assert.ok(contrast >= 4.5, `--faint contrast ${contrast.toFixed(3)}:1 must meet WCAG AA`)
 })
+
+test('theme control starts accessible and light theme tokens are defined', () => {
+  assert.ok(html.includes('id="theme-toggle"'))
+  assert.ok(html.includes('aria-pressed="false"'))
+  assert.ok(html.includes('data-theme-label'))
+  assert.ok(css.includes(":root[data-theme='light']"))
+})

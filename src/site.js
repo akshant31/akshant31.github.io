@@ -1,9 +1,11 @@
 import { SECTIONS } from './content.js'
+import { initTheme } from './theme.js'
 
 export function initSite({ onSection, onEmphasis } = {}) {
   const controller = new AbortController()
   const { signal } = controller
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const theme = initTheme()
   const sections = SECTIONS.map(({ id }) => document.getElementById(id))
   const navLinks = [...document.querySelectorAll('[data-nav-link]')]
   const skillPanels = [...document.querySelectorAll('[data-skill-tools]')]
@@ -92,6 +94,7 @@ export function initSite({ onSection, onEmphasis } = {}) {
     dispose() {
       observer.disconnect()
       controller.abort()
+      theme.dispose()
       document.documentElement.classList.remove('js')
       for (const panel of skillPanels) panel.hidden = false
     },
