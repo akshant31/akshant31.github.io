@@ -2,42 +2,48 @@ export default {
   status: 'passed',
   checks: [
     {
-      name: 'Four immersive desktop chapters',
+      name: 'Corrected PDF-derived India contour',
       status: 'passed',
-      evidence: '2026-10-27 actual 1440 × 900 capture review: the bottom-anchored half-body boy, enlarged India, skills constellation, and portal were visually inspected with readable content and reachable controls. The hero torso crossed the bottom by 38.16 px and cleared the name by 46.31 px; every chapter had zero horizontal overflow.',
+      evidence: 'The reviewed northern and right-Ladakh source points were regenerated into one closed, north-up mainland ring. Actual northern and northeastern source overlays plus desktop, mobile, narrow, and tablet scene captures were inspected; no internal borders, labels, inset, or far-northeast trimming was introduced.',
     },
     {
-      name: 'Numerical pre-revision chapter comparison',
+      name: 'Persistent dark and light themes',
       status: 'passed',
-      evidence: 'At the same 1440 × 900 viewport, baseline 0d26249 and current projected bounds changed as follows: India 496.81 × 523.15 → 632.40 × 726.01 px (1.7665× area); Skills 648.48 × 515.59 → 927.38 × 745.25 px (2.0671× area); Contact 645.47 × 778.74 → 745.09 × 838.86 px (1.2435× area). Native-resolution baseline/current pixel review confirmed visibly larger subjects and the cleaned single India outline without the baseline extra island artifacts.',
+      evidence: 'Real-browser checks confirmed the dark default, explicit light persistence across reload, usable in-memory toggling when storage is denied, keyboard operation with visible focus, computed color-scheme changes, and in-place scene recoloring with NormalBlending in light mode. Scene and geometry identity and the two point-field counts remained unchanged.',
     },
     {
-      name: 'Four mobile chapters and responsive composition',
+      name: 'Four viewport families and collision-free compositions',
       status: 'passed',
-      evidence: '2026-10-27 actual 390 × 844 mobile capture review: the top-centered name, bottom-anchored portrait, north-up India, constellation, and portal remained readable with zero horizontal overflow. The hero torso crossed the bottom by 39.66 px with 151.64 px heading clearance; Skills occupied 366.59 × 292.06 px and all essential controls were reachable.',
+      evidence: 'Every chapter was captured and visually inspected at 1440 × 900 and 390 × 844 in both themes, and at 320 × 740 and 768 × 1024 in dark. Measured essential-text/particle intersections, pairwise text collisions, and horizontal overflow were cleared after the final safe-zone adjustments; theme and chapter controls remained reachable.',
     },
     {
-      name: 'Navigation, selections, accessible names, and projected pointer restoration',
+      name: 'Cinematic reveals and readable fallbacks',
       status: 'passed',
-      evidence: 'Real-browser checks passed for native scrolling, all four header links, shortcuts 1–4, all arrow-key directions, every skill category, every experience row, and exact contact hrefs. The 2026-10-28 targeted review exposed Boy chapter, India chapter, Skills chapter, and Contact chapter in the mobile accessibility tree; native wheel input advanced scrollY from 0 to 700 and all compact links navigated without overflow. Projected India dissolution changed 3,542 desktop particles and 3,512 mobile particles. The nearest affected particle was 0.417 px from the desktop target and 0.635 px from the mobile target; weighted centroids were 19.217 px and 11.098 px away. Eight successive post-leave frames decreased and the 2,000 ms settling tail ended with exactly zero changed coordinates and zero maximum delta at both sizes.',
+      evidence: 'Active chapter reveals reached full opacity and small scroll fluctuations did not restart inactive chapters. Reduced motion made all reveal content immediately visible with zero-duration transitions, no-JavaScript kept all chapters and contact content visible, and WebGL-disabled dark and light modes retained readable content and a working theme toggle.',
     },
     {
-      name: 'Contrast, responsive frame measurement, reduced motion, and fallback',
+      name: 'Fine-pointer comet lifecycle',
       status: 'passed',
-      evidence: 'Computed experience/footer color #71808c on actual background #05070b has 4.9617:1 WCAG relative-luminance contrast. Scroll events now measure progress without rebuilding target bounds; initialization, resize, and changed viewport/camera inputs rebuild static frames. A targeted transient-resize review settled correctly at 390 × 844. Across all four chapters at both 1440 × 900 and 390 × 844, reduced motion produced exact target buffers and chapter frames with zero position differences and static rig, camera, and ambient rotation. The earlier WebGL-disabled review kept all four semantic chapters and contact links readable with zero overflow and Static portfolio mode.',
+      evidence: 'Actual comet pixels were captured and then cleared after inactivity. One pointer-transparent bounded canvas was present on fine-pointer desktop; coarse-pointer and reduced-motion emulation removed it and restored the native cursor. Dynamic disposal removed the owned canvas, listeners, and scheduled frame.',
     },
     {
-      name: 'Editable root scene and Play controls',
+      name: 'Navigation, selection, and pointer restoration',
       status: 'passed',
-      evidence: 'The embedded root scene loaded dataUniverse, particleField, ambientDust, camera, and the dataField, dataMotion, and dataPalette groups with approved defaults. Particle-size and palette edits changed the live scene; normal-speed Play-canvas hashes differed while zero-speed hashes were identical.',
+      evidence: 'Native scrolling, all header links, shortcuts 1–4, adjacent-chapter arrow keys, every experience row, every skill category, and exact contact links passed real-browser checks. Pointer dissolution and successive damped post-leave frames ended in exact buffer restoration; reduced-motion buffers, rigging, camera, and ambient rotation remained static.',
+    },
+    {
+      name: 'Editable project and Play controls',
+      status: 'passed',
+      evidence: 'The embedded scene exposed the expected project, artifact, objects, and parameter groups. Particle-size, motion, and palette controls changed the live scene, zero-speed Play frames were identical, and measured Play frames retained exactly two point-field draw calls.',
     },
     {
       name: 'Automated regression and production gate',
       status: 'passed',
-      evidence: 'Final gate: npm test passed 50 of 50 tests; Edit3D compile check and production build passed; git diff --check passed.',
+      evidence: 'Final gate: npm test, Edit3D compile check, production build, and git diff --check passed on 2026-10-29; actual counts and existing nonfatal decoder/chunk warnings are recorded in the local cinematic-review evidence.',
     },
   ],
   limitations: [
     'Native desktop toolbar and IPC integration were not exercised; editable-scene checks used the actual embedded browser scene.',
+    "Chrome does not support the brief-requested matchMedia('(color-scheme: light)') query; the actual computed CSS color-scheme, root theme state, blending, object identity, and particle counts were verified instead.",
   ],
 }
